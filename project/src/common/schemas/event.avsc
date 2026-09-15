@@ -1,0 +1,59 @@
+{
+  "type": "record",
+  "name": "PulseStreamEvent",
+  "namespace": "com.pulsestream.events",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string"
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "enum",
+        "name": "EventType",
+        "symbols": ["POST_CREATED", "COMMENT_CREATED", "REACTION_ADDED", "USER_JOINED"]
+      }
+    },
+    {
+      "name": "source",
+      "type": {
+        "type": "enum",
+        "name": "EventSource",
+        "symbols": ["WIKIPEDIA", "SIMULATOR"]
+      }
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "user_id",
+      "type": "string"
+    },
+    {
+      "name": "community_id",
+      "type": ["null", "string"],
+      "default": null
+    },
+    {
+      "name": "payload",
+      "type": "string"
+    },
+    {
+      "name": "ingested_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0"
+    }
+  ]
+}
