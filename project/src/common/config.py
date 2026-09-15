@@ -56,6 +56,30 @@ class Settings(BaseSettings):
     environment: str = Field(default="development", validation_alias="ENVIRONMENT")
     metrics_port: int = Field(default=9100, validation_alias="METRICS_PORT")
 
+    # Ingestion Service
+    ingestion_wikipedia_enabled: bool = Field(
+        default=True, validation_alias="INGESTION_WIKIPEDIA_ENABLED"
+    )
+    ingestion_wikipedia_url: str = Field(
+        default="https://stream.wikimedia.org/v2/stream/recentchange",
+        validation_alias="INGESTION_WIKIPEDIA_URL",
+    )
+    ingestion_simulator_enabled: bool = Field(
+        default=True, validation_alias="INGESTION_SIMULATOR_ENABLED"
+    )
+    ingestion_simulator_mode: str = Field(
+        default="steady", validation_alias="INGESTION_SIMULATOR_MODE"
+    )
+    ingestion_simulator_rate: int = Field(
+        default=50, validation_alias="INGESTION_SIMULATOR_RATE"
+    )
+    ingestion_chaos_duplicate_pct: float = Field(
+        default=0.05, validation_alias="INGESTION_CHAOS_DUPLICATE_PCT"
+    )
+    ingestion_chaos_malformed_pct: float = Field(
+        default=0.02, validation_alias="INGESTION_CHAOS_MALFORMED_PCT"
+    )
+
     @computed_field
     @property
     def postgres_dsn(self) -> str:

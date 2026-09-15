@@ -1,4 +1,4 @@
-.PHONY: up down logs test bench chaos reset smoke
+.PHONY: up down logs test bench chaos reset smoke ingestion
 
 up:
 	docker compose -f docker/docker-compose.yml up -d
@@ -24,3 +24,6 @@ reset:
 
 smoke:
 	python smoke.py
+
+ingestion:
+	python -m src.ingestion.main

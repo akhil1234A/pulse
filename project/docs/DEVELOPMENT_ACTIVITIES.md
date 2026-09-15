@@ -146,40 +146,40 @@ Wikipedia SSE + Simulator producing validated events to Kafka.
 ### Activities
 
 #### 2.1 Event Simulator
-- [ ] `EventSimulator` class with async generator pattern
-- [ ] Modes: steady (default 1000/sec), burst (10x for 30s), chaos, ramp
-- [ ] Chaos features:
+- [x] `EventSimulator` class with async generator pattern
+- [x] Modes: steady (default 1000/sec), burst (10x for 30s), chaos, ramp
+- [x] Chaos features:
   - Duplicate injection (configurable %, default 5%)
   - Malformed events (missing fields, bad types, default 2%)
   - Out-of-order timestamps
-- [ ] User/community distribution (Zipf for realistic skew)
-- [ ] Unit tests for all modes
+- [x] User/community distribution (Zipf for realistic skew)
+- [x] Unit tests for all modes
 
 #### 2.2 Wikipedia Connector
-- [ ] SSE client using `aiohttp` (connect to `stream.wikimedia.org`)
-- [ ] Event type mapping:
+- [x] SSE client using `aiohttp` (connect to `stream.wikimedia.org`)
+- [x] Event type mapping:
   - `edit` → `POST_CREATED`
   - `new` → `POST_CREATED`
   - `log` → `USER_JOINED`
   - `categorize` → `REACTION_ADDED`
-- [ ] Auto-reconnect with exponential backoff on disconnect
-- [ ] Filter: only main namespace + user namespace
-- [ ] Unit tests with mocked SSE responses
+- [x] Auto-reconnect with exponential backoff on disconnect
+- [x] Filter: only main namespace + user namespace
+- [x] Unit tests with mocked SSE responses
 
 #### 2.3 Ingestion Pipeline
-- [ ] `IngestionPipeline` class:
+- [x] `IngestionPipeline` class:
   - `receive()` → `normalize()` → `validate_avro()` → `assign_id()` → `publish()`
-- [ ] Avro validation with descriptive error messages
-- [ ] DLQ routing for invalid events
-- [ ] Prometheus metrics: `ingestion_events_total`, `ingestion_events_rejected_total`
-- [ ] Structured logging per event
+- [x] Avro validation with descriptive error messages
+- [x] DLQ routing for invalid events
+- [x] Prometheus metrics: `ingestion_events_total`, `ingestion_events_rejected_total`
+- [x] Structured logging per event
 
 #### 2.4 Service Entry Point
-- [ ] `main.py` — runs Wikipedia + simulator concurrently (asyncio)
-- [ ] Graceful shutdown (SIGTERM → drain in-flight events)
-- [ ] Dockerfile
-- [ ] Add to docker-compose.yml
-- [ ] Integration test: run ingestion → verify events in Kafka
+- [x] `main.py` — runs Wikipedia + simulator concurrently (asyncio)
+- [x] Graceful shutdown (SIGTERM → drain in-flight events)
+- [x] Dockerfile
+- [x] Add to docker-compose.yml
+- [x] Integration test: run ingestion → verify events in Kafka
 
 ### Definition of Done
 ```text

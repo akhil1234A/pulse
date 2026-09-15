@@ -122,6 +122,28 @@ services:
     networks:
       - pulsestream
 
+  ingestion:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.ingestion
+    container_name: pulsestream-ingestion
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      METRICS_PORT: 9100
+      LOG_LEVEL: "INFO"
+    ports:
+      - "9100:9100"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+    networks:
+      - pulsestream
+
 networks:
   pulsestream:
     name: pulsestream

@@ -287,7 +287,74 @@ ALL PHASE 1 SMOKE TESTS PASSED!
 
 ---
 
-## 6. Tear Down & Reset
+## 6. Phase 2: Ingestion Service (Run & Test)
+
+The Ingestion Service ingests live events concurrently from **Wikipedia Recent Changes** (real-world SSE stream) and the **EventSimulator** (synthetic event generator with Zipf skew).
+
+### 6.1 Running the Ingestion Service
+
+#### Option A: Running locally with Python
+```powershell
+# Using make:
+make ingestion
+
+# Or directly:
+python -m src.ingestion.main
+```
+Output will display structured JSON logs:
+```json
+{"timestamp": "2026-09-15 23:18:38", "level": "INFO", "logger": "pulsestream.ingestion", "message": "PulseStream Ingestion Service running with 2 connector(s)."}
+{"timestamp": "2026-09-15 23:18:39", "level": "INFO", "logger": "src.ingestion.connectors.wikipedia", "message": "Connected to Wikimedia EventStreams successfully."}
+```
+Prometheus metrics will be exposed at: `http://localhost:9100/metrics`.
+
+#### Option B: Running in Docker
+```powershell
+docker compose -f docker/docker-compose.yml up -d --build ingestion
+```
+
+### 6.2 Testing the Ingestion Service
+
+#### 1. Run Ingestion Unit Tests
+```powershell
+pytest tests/unit/test_simulator.py tests/unit/test_wikipedia.py tests/unit/test_ingestion_pipeline.py -v
+```
+
+#### 2. Run Live Kafka Integration Test
+Validates that events produced by the simulator are ingested, normalized, Avro-validated, published to Kafka, and consumed back without loss:
+```powershell
+pytest tests/integration/test_ingestion_kafka.py -v
+```
+
+#### 3. Monitor Live Events in Real Time
+While the ingestion service is running in one terminal, open another terminal to watch the live event stream arriving from Kafka:
+```powershell
+# Watch normalized events on the main topic:
+python scripts/consume_events.py
+
+# Watch events on the Dead Letter Queue:
+python scripts/consume_events.py --topic pulsestream.events.dlq
+```
+Sample output:
+```text
+[0001] [WIKIPEDIA] POST_CREATED     | community: enwiki          | user: EditorBeta           | id: 7b36f1c4
+[0002] [SIMULATOR] COMMENT_CREATED  | community: programming     | user: usr_0012             | id: 3a98c2d1
+[0003] [WIKIPEDIA] USER_JOINED      | community: commonswiki     | user: NewUser42            | id: 9e51c8f0
+[0004] [SIMULATOR] REACTION_ADDED   | community: technology      | user: usr_0003             | id: 1f82b7a9
+```
+
+#### 4. Inspect Ingestion Prometheus Metrics
+Check real-time counter metrics:
+```powershell
+curl http://localhost:9100/metrics
+```
+Look for:
+- `ingestion_events_total{event_type="...",source="..."}`
+- `ingestion_events_rejected_total{error_type="..."}`
+
+---
+
+## 7. Tear Down & Reset
 
 ### Stop Infrastructure
 ```powershell
@@ -311,7 +378,7 @@ docker compose -f docker/docker-compose.yml up -d
 
 ---
 
-## 7. Common Troubleshooting
+## 8. Common Troubleshooting
 
 | Issue | Cause | Solution |
 |---|---|---|

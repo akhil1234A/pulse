@@ -1,0 +1,79 @@
+# Phase 2: Ingestion Service — Walkthrough
+
+Phase 2 of **PulseStream** has been implemented, tested, and verified. The Ingestion Service ingests events concurrently from real-world Wikipedia Recent Changes and synthetic simulations, validates them against the Avro schema, and publishes them to Kafka with DLQ routing.
+
+---
+
+## What Was Built
+
+### 1. Connectors (`src/ingestion/connectors/`)
+- [simulator.py](file:///c:/Users/Akhil%20Anwar/projects/Personal/project/src/ingestion/connectors/simulator.py):
+  - Async generator `EventSimulator.stream_events()`
+  - Modes: `steady`, `burst` (10x rate spike), `chaos`, and `ramp`.
+  - Zipf power-law distribution for realistic user activity and community popularity skew.
+  - Chaos injection: duplicates (5%), malformed structures (2%), and out-of-order timestamps.
+- [wikipedia.py](file:///c:/Users/Akhil%20Anwar/projects/Personal/project/src/ingestion/connectors/wikipedia.py):
+  - SSE client consuming from `https://stream.wikimedia.org/v2/stream/recentchange`.
+  - Compliant `User-Agent` header (`PulseStream/1.0`).
+  - Canonical event type mapping: `edit`/`new` $\to$ `POST_CREATED`, `log` $\to$ `USER_JOINED`, `categorize` $\to$ `REACTION_ADDED`.
+  - Namespace filter: main article (`0`) and user (`2`) namespaces.
+  - Automatic reconnection with exponential backoff and jitter.
+
+### 2. Pipeline (`src/ingestion/pipeline.py`)
+- `IngestionPipeline`:
+  - `receive` $\to$ `normalize` $\to$ `validate_avro` $\to$ `assign_id` $\to$ `publish`.
+  - Valid events are Avro-serialized and produced to `pulsestream.events` using community/user partition key hashing.
+  - Validation failures or malformed events are automatically routed to `pulsestream.events.dlq` with error context.
+  - Metrics tracking: `ingestion_events_total` and `ingestion_events_rejected_total`.
+
+### 3. Service Entry Point & Docker
+- [src/ingestion/main.py](file:///c:/Users/Akhil%20Anwar/projects/Personal/project/src/ingestion/main.py):
+  - Asynchronous task coordination running enabled connectors concurrently.
+  - Prometheus metrics server on port `9100`.
+  - Graceful shutdown handling (`SIGINT`/`SIGTERM`), draining pending events and flushing the Kafka producer.
+- [docker/Dockerfile.ingestion](file:///c:/Users/Akhil%20Anwar/projects/Personal/project/docker/Dockerfile.ingestion) & [docker/docker-compose.yml](file:///c:/Users/Akhil%20Anwar/projects/Personal/project/docker/docker-compose.yml): Added `ingestion` container service (0.25 CPU, 256MB RAM).
+- [Makefile](file:///c:/Users/Akhil%20Anwar/projects/Personal/project/Makefile): Added `ingestion` target.
+
+---
+
+## Verification Results
+
+### 1. Unit Tests
+```bash
+$ pytest tests/unit -v
+============================= test session starts =============================
+collected 45 items
+
+tests\unit\test_avro.py ....                                             [  8%]
+tests\unit\test_config.py ....                                           [ 17%]
+tests\unit\test_db.py ....                                               [ 26%]
+tests\unit\test_ingestion_pipeline.py ...                                [ 33%]
+tests\unit\test_kafka_utils.py ....                                      [ 42%]
+tests\unit\test_logging.py ...                                           [ 48%]
+tests\unit\test_metrics.py .                                             [ 51%]
+tests\unit\test_models.py ....                                           [ 60%]
+tests\unit\test_redis_utils.py ...                                       [ 66%]
+tests\unit\test_retry.py ......                                          [ 80%]
+tests\unit\test_simulator.py .....                                       [ 91%]
+tests\unit\test_wikipedia.py ....                                        [100%]
+
+============================= 45 passed in 2.72s ==============================
+```
+
+### 2. Live Kafka Integration Test
+```bash
+$ pytest tests/integration/test_ingestion_kafka.py -v
+tests\integration\test_ingestion_kafka.py .                              [100%]
+======================== 1 passed in 3.94s =========================
+```
+
+### 3. Live Service Execution (Wikipedia SSE + Simulator)
+```json
+{"timestamp": "2026-09-15 23:18:38,305", "level": "INFO", "logger": "pulsestream.ingestion", "message": "Initializing PulseStream Ingestion Service..."}
+{"timestamp": "2026-09-15 23:18:38,325", "level": "INFO", "logger": "src.common.metrics", "message": "Prometheus metrics server started on port 9100"}
+{"timestamp": "2026-09-15 23:18:38,336", "level": "INFO", "logger": "pulsestream.ingestion", "message": "Starting Simulator task (mode=steady, rate=50)..."}
+{"timestamp": "2026-09-15 23:18:38,373", "level": "INFO", "logger": "pulsestream.ingestion", "message": "Starting Wikipedia SSE connector task..."}
+{"timestamp": "2026-09-15 23:18:39,556", "level": "INFO", "logger": "src.ingestion.connectors.wikipedia", "message": "Connected to Wikimedia EventStreams successfully."}
+```
+
+Phase 2 is complete. The project is ready for **Phase 3: Workers (Aggregation & Anomaly Detection)**.

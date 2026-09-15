@@ -13,9 +13,11 @@ from src.common.logging import (
 
 
 def test_correlation_id_context():
+    set_correlation_id(None)
     assert get_correlation_id() is None
     set_correlation_id("test-corr-123")
     assert get_correlation_id() == "test-corr-123"
+    set_correlation_id(None)
 
 
 def test_json_formatter_with_correlation_id():
