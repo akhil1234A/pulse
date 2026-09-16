@@ -1,4 +1,4 @@
-.PHONY: up down logs test bench chaos reset smoke ingestion
+.PHONY: up down logs test bench chaos reset smoke ingestion agg-worker anomaly-worker
 
 up:
 	docker compose -f docker/docker-compose.yml up -d
@@ -27,3 +27,9 @@ smoke:
 
 ingestion:
 	python -m src.ingestion.main
+
+agg-worker:
+	python -m src.workers.aggregation.main
+
+anomaly-worker:
+	python -m src.workers.anomaly.main

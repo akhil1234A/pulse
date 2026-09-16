@@ -80,6 +80,23 @@ class Settings(BaseSettings):
         default=0.02, validation_alias="INGESTION_CHAOS_MALFORMED_PCT"
     )
 
+    # Worker Settings
+    worker_batch_flush_size: int = Field(
+        default=1000, validation_alias="WORKER_BATCH_FLUSH_SIZE"
+    )
+    worker_batch_flush_interval_seconds: float = Field(
+        default=5.0, validation_alias="WORKER_BATCH_FLUSH_INTERVAL_SECONDS"
+    )
+    worker_poll_timeout_seconds: float = Field(
+        default=1.0, validation_alias="WORKER_POLL_TIMEOUT_SECONDS"
+    )
+    worker_max_batch_size: int = Field(
+        default=500, validation_alias="WORKER_MAX_BATCH_SIZE"
+    )
+    worker_health_port: int = Field(
+        default=9101, validation_alias="WORKER_HEALTH_PORT"
+    )
+
     @computed_field
     @property
     def postgres_dsn(self) -> str:

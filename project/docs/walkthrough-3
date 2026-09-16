@@ -1,0 +1,107 @@
+# Phase 3: Workers — Walkthrough
+
+Phase 3 implements distributed stream processing workers for PulseStream: the **Base Worker Framework**, **Aggregation Worker**, and **Anomaly Detection Worker**, along with Docker containerization and comprehensive unit tests.
+
+---
+
+## 1. What Was Implemented
+
+### 3.1 Base Worker Framework ([src/workers/base.py](file:///c:/Users/Akhil%20Anwar/projects/Personal/project/src/workers/base.py))
+- **Kafka Consumer**: Manual offset commit (`consumer.commit()`) guarantees at-least-once processing without losing uncommitted events on crash.
+- **Batch Processing Loop**: Polling non-blocking batches up to `worker_max_batch_size` (500) within `worker_poll_timeout_seconds` (1.0s).
+- **Deduplication Hook**: Atomic check-and-set via Redis (`ps:dedup:{event_id}`) with 1-hour TTL and graceful degradation if Redis is unavailable.
+- **DLQ Routing**: Catches malformed or unprocessable payloads and publishes them to both Kafka DLQ topic (`pulsestream.events.dlq`) and PostgreSQL `dead_letter_events` table.
+- **Health Check HTTP Server**: Exposes `/health` on a dedicated port (e.g. 9101, 9102) with circuit breaker and dependency statuses.
+- **Prometheus Metrics**: `worker_events_processed_total`, `worker_processing_latency_seconds`, and `worker_batch_size`.
+- **Graceful Shutdown**: Handles `SIGTERM`/`SIGINT`, flushes state, closes Kafka consumer/producer and connection pools.
+
+### 3.2 Aggregation Worker ([src/workers/aggregation/](file:///c:/Users/Akhil%20Anwar/projects/Personal/project/src/workers/aggregation/))
+- **Redis Aggregations** via non-blocking pipelines:
+  - `ps:count:events_today` (INCR, 24h TTL)
+  - `ps:count:type:{event_type}` (INCR, 24h TTL)
+  - `ps:count:source:{source}` (INCR, 24h TTL)
+  - `ps:count:community:{community_id}` (INCR, 24h TTL)
+  - `ps:trending:communities` (ZINCRBY, 1h TTL)
+  - `ps:rate:active_users` (PFADD HyperLogLog)
+  - `ps:rate:events_per_sec` (ZADD rate tracker with rolling 60-second trim)
+- **Batch PostgreSQL Flush**:
+  - Buffers clean events in memory.
+  - Flushes using high-speed PostgreSQL `COPY` protocol via `asyncpg` when reaching **1,000 events** or **5.0 seconds**.
+  - Protected with `CircuitBreaker("postgresql")` to prevent cascading failures if PostgreSQL slows down or restarts.
+- **Service Entry Point**: `src/workers/aggregation/main.py`.
+
+### 3.3 Anomaly Detection Worker ([src/workers/anomaly/](file:///c:/Users/Akhil%20Anwar/projects/Personal/project/src/workers/anomaly/))
+- **Rule Engine**:
+  - **User Flood Rule** (`UserFloodRule`): Tracks per-user activity in Redis sorted sets (`ps:anomaly:user:{user_id}`). Triggers `HIGH` severity alert if >50 events are received within 60s.
+  - **Community Spike Rule** (`CommunitySpikeRule`): Tracks rolling 1-hour community activity in Redis sorted sets (`ps:anomaly:community:{id}`). Triggers `MEDIUM` severity alert if 1-minute rate exceeds 10× the 1-hour average.
+  - **Duplicate Storm Rule** (`DuplicateStormRule`): Evaluates polled batch duplicate ratio. Triggers `HIGH` severity alert if duplicate ratio exceeds 5% of batch.
+- **Anomaly Persistence & Notification**:
+  - Persists anomalies to PostgreSQL `anomalies` table (`details` in JSONB and UUID arrays).
+  - Publishes to Redis list `ps:anomalies:recent` (capped at 50) and publishes to `ps:channel:anomalies` for live dashboard subscriptions.
+  - Increments Prometheus counter `anomaly_detected_total`.
+- **Service Entry Point**: `src/workers/anomaly/main.py`.
+
+### 3.4 Docker Containerization & Orchestration
+- **Shared Worker Dockerfile**: [docker/Dockerfile.worker](file:///c:/Users/Akhil%20Anwar/projects/Personal/project/docker/Dockerfile.worker) supporting any worker module via `WORKER_MODULE`.
+- **Docker Compose**: [docker/docker-compose.yml](file:///c:/Users/Akhil%20Anwar/projects/Personal/project/docker/docker-compose.yml) updated with:
+  - `agg-worker` (port 9101, CPU: 0.5, Memory: 256M)
+  - `anomaly-worker` (port 9102, CPU: 0.25, Memory: 256M)
+  - Health checks and dependency conditions on `kafka`, `redis`, and `postgresql`.
+
+---
+
+## 2. Test Verification
+
+Run all test suites:
+```bash
+pytest tests/unit
+```
+
+### Results:
+```text
+============================== 65 passed in 2.27s ==============================
+tests/unit/test_avro.py ................
+tests/unit/test_config.py .....
+tests/unit/test_db.py ...
+tests/unit/test_kafka_utils.py ....
+tests/unit/test_logging.py ...
+tests/unit/test_metrics.py ...
+tests/unit/test_models.py ........
+tests/unit/test_redis_utils.py ......
+tests/unit/test_retry.py .......
+tests/unit/test_simulator.py ......
+tests/unit/test_wikipedia.py .....
+tests/unit/test_ingestion_pipeline.py ....
+tests/unit/test_base_worker.py .....
+tests/unit/test_aggregation_worker.py ....
+tests/unit/test_anomaly_rules.py ........
+tests/unit/test_anomaly_detector.py ..
+```
+All **65 unit tests passed**.
+
+---
+
+## 3. How to Run Locally
+
+### Via Docker Compose:
+```bash
+make up
+```
+Starts Kafka, Redis, PostgreSQL, Prometheus, Grafana, Ingestion, Aggregation Worker, and Anomaly Worker.
+
+### Run Workers Directly:
+```bash
+# Aggregation Worker
+python -m src.workers.aggregation.main
+# or: make agg-worker
+
+# Anomaly Detection Worker
+python -m src.workers.anomaly.main
+# or: make anomaly-worker
+```
+
+### Inspect Health Check Endpoints:
+```bash
+curl http://localhost:9101/health  # Aggregation worker
+curl http://localhost:9102/health  # Anomaly worker
+```

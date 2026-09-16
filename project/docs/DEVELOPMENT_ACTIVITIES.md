@@ -199,7 +199,7 @@ Aggregation worker (counters + storage) and anomaly detection worker.
 ### Activities
 
 #### 3.1 Base Worker Framework
-- [ ] `BaseWorker` class:
+- [x] `BaseWorker` class:
   - Kafka consumer with manual offset commit
   - Batch processing loop (poll → process → commit)
   - Dedup check via Redis (`SISMEMBER`/`SETEX`)
@@ -207,47 +207,47 @@ Aggregation worker (counters + storage) and anomaly detection worker.
   - Graceful shutdown
   - Health check HTTP endpoint (`/health`)
   - Prometheus metrics integration
-- [ ] Unit tests for worker lifecycle and error handling
+- [x] Unit tests for worker lifecycle and error handling
 
 #### 3.2 Aggregation Worker
-- [ ] Counter updates (Redis pipeline for batch efficiency):
+- [x] Counter updates (Redis pipeline for batch efficiency):
   - `events_today` → INCR
   - `type:{type}` → INCR
   - `source:{source}` → INCR
   - `community:{id}` → INCR
-- [ ] Active users → PFADD (HyperLogLog)
-- [ ] Events/sec → ZADD to sorted set, trim entries >60s
-- [ ] Trending communities → ZINCRBY
-- [ ] Batch PostgreSQL inserts:
+- [x] Active users → PFADD (HyperLogLog)
+- [x] Events/sec → ZADD to sorted set, trim entries >60s
+- [x] Trending communities → ZINCRBY
+- [x] Batch PostgreSQL inserts:
   - Buffer events in memory
   - Flush on 1000 events OR 5 seconds (whichever first)
   - Use COPY protocol via asyncpg
   - Circuit breaker on PostgreSQL connection
-- [ ] Dedup: mark processed event_ids in Redis (TTL 1h)
-- [ ] Unit tests with mocked Redis/PostgreSQL
-- [ ] Integration test: events → Kafka → worker → verify Redis counters + PostgreSQL rows
+- [x] Dedup: mark processed event_ids in Redis (TTL 1h)
+- [x] Unit tests with mocked Redis/PostgreSQL
+- [x] Integration test: events → Kafka → worker → verify Redis counters + PostgreSQL rows
 
 #### 3.3 Anomaly Detection Worker
-- [ ] Rule engine framework (list of pluggable rules)
-- [ ] **User Flood rule**:
+- [x] Rule engine framework (list of pluggable rules)
+- [x] **User Flood rule**:
   - ZADD per-user sorted set with timestamps
   - Count events in last 60s
   - Trigger at >50 events
-- [ ] **Community Spike rule**:
+- [x] **Community Spike rule**:
   - Compare 1-min rate vs 1-hour rolling average
   - Trigger at >10x average
-- [ ] **Duplicate Storm rule**:
+- [x] **Duplicate Storm rule**:
   - Track dedup hit rate per batch
   - Trigger at >5% duplicates
-- [ ] Write anomalies to PostgreSQL `anomalies` table
-- [ ] Publish anomaly notifications to Redis (for dashboard)
-- [ ] Unit tests for each rule with edge cases
-- [ ] Integration test: inject bot-like events → verify anomaly detected
+- [x] Write anomalies to PostgreSQL `anomalies` table
+- [x] Publish anomaly notifications to Redis (for dashboard)
+- [x] Unit tests for each rule with edge cases
+- [x] Integration test: inject bot-like events → verify anomaly detected
 
 #### 3.4 Dockerize Workers
-- [ ] Dockerfile (shared base image for both workers)
-- [ ] Add both workers to docker-compose.yml
-- [ ] Health check configuration
+- [x] Dockerfile (shared base image for both workers)
+- [x] Add both workers to docker-compose.yml
+- [x] Health check configuration
 
 ### Definition of Done
 ```text

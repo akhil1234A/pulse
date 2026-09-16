@@ -144,6 +144,68 @@ services:
     networks:
       - pulsestream
 
+  agg-worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.worker
+    container_name: pulsestream-agg-worker
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      REDIS_URL: "redis://redis:6379/0"
+      POSTGRES_HOST: "postgresql"
+      POSTGRES_PORT: 5432
+      WORKER_MODULE: "src.workers.aggregation.main"
+      METRICS_PORT: 9101
+      WORKER_HEALTH_PORT: 9101
+      LOG_LEVEL: "INFO"
+    ports:
+      - "9101:9101"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    networks:
+      - pulsestream
+
+  anomaly-worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.worker
+    container_name: pulsestream-anomaly-worker
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      REDIS_URL: "redis://redis:6379/0"
+      POSTGRES_HOST: "postgresql"
+      POSTGRES_PORT: 5432
+      WORKER_MODULE: "src.workers.anomaly.main"
+      METRICS_PORT: 9102
+      WORKER_HEALTH_PORT: 9102
+      LOG_LEVEL: "INFO"
+    ports:
+      - "9102:9102"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+    networks:
+      - pulsestream
+
 networks:
   pulsestream:
     name: pulsestream

@@ -354,7 +354,108 @@ Look for:
 
 ---
 
-## 7. Tear Down & Reset
+## 7. Phase 3: Workers (Run & Test)
+
+Phase 3 introduces the **Aggregation Worker** and the **Anomaly Detection Worker**. Both workers consume from `pulsestream.events` using dedicated consumer groups, deduplicate events against Redis, update aggregates, flush to PostgreSQL in batches, and run real-time anomaly detection rules.
+
+### 7.1 Running the Workers
+
+Make sure the Docker infrastructure is running:
+```powershell
+make up
+# or: docker compose -f docker/docker-compose.yml up -d
+```
+
+#### Option A: Running Workers in Docker
+Both workers run automatically in the Docker Compose network:
+```powershell
+docker compose -f docker/docker-compose.yml up -d --build agg-worker anomaly-worker
+```
+View their logs:
+```powershell
+docker compose -f docker/docker-compose.yml logs -f agg-worker
+docker compose -f docker/docker-compose.yml logs -f anomaly-worker
+```
+
+#### Option B: Running Workers Locally with Python
+You can also run them in separate terminal tabs for live debugging:
+
+**Terminal 1: Aggregation Worker**
+```powershell
+make agg-worker
+# or: python -m src.workers.aggregation.main
+```
+
+**Terminal 2: Anomaly Detection Worker**
+```powershell
+make anomaly-worker
+# or: python -m src.workers.anomaly.main
+```
+
+---
+
+### 7.2 Testing the Workers
+
+#### 1. Run All Worker Unit Tests
+```powershell
+pytest tests/unit/test_base_worker.py tests/unit/test_aggregation_worker.py tests/unit/test_anomaly_rules.py tests/unit/test_anomaly_detector.py -v
+```
+To run all 65 unit tests in the project:
+```powershell
+make test
+# or: pytest tests/unit
+```
+
+#### 2. Verify Health Check Endpoints
+Both workers expose a lightweight HTTP `/health` check:
+```powershell
+# Aggregation Worker (port 9101)
+curl http://localhost:9101/health
+
+# Anomaly Worker (port 9102)
+curl http://localhost:9102/health
+```
+Example response:
+```json
+{
+  "status": "healthy",
+  "worker_type": "aggregation",
+  "group_id": "ps-aggregation",
+  "redis_connected": true,
+  "pg_circuit": "CLOSED",
+  "redis_circuit": "CLOSED"
+}
+```
+
+#### 3. Verify Redis Aggregates
+While ingestion and the aggregation worker are running, inspect Redis keys using `redis-cli` (or via docker exec):
+```powershell
+# Check total events today
+docker exec -it pulsestream-redis redis-cli GET ps:count:events_today
+
+# Check top trending communities (sorted set)
+docker exec -it pulsestream-redis redis-cli ZREVRANGE ps:trending:communities 0 5 WITHSCORES
+
+# Check estimated active users (HyperLogLog)
+docker exec -it pulsestream-redis redis-cli PFCOUNT ps:rate:active_users
+
+# Check recent anomalies list
+docker exec -it pulsestream-redis redis-cli LRANGE ps:anomalies:recent 0 5
+```
+
+#### 4. Verify PostgreSQL Events & Anomalies
+Query the durable database tables:
+```powershell
+# Count events in the partitioned events table
+docker exec -it pulsestream-postgres psql -U pulsestream -d pulsestream -c "SELECT count(*), min(timestamp), max(timestamp) FROM events;"
+
+# Check detected anomalies
+docker exec -it pulsestream-postgres psql -U pulsestream -d pulsestream -c "SELECT id, anomaly_type, severity, description, detected_at FROM anomalies ORDER BY detected_at DESC LIMIT 10;"
+```
+
+---
+
+## 8. Tear Down & Reset
 
 ### Stop Infrastructure
 ```powershell
@@ -378,11 +479,12 @@ docker compose -f docker/docker-compose.yml up -d
 
 ---
 
-## 8. Common Troubleshooting
+## 9. Common Troubleshooting
 
 | Issue | Cause | Solution |
 |---|---|---|
 | `failed to connect to the docker API at npipe` | Docker Desktop is not running. | Start the Docker Desktop application and wait for the status indicator to turn green. |
 | `password authentication failed for user "pulsestream"` | Port conflict with a local PostgreSQL server on host port 5432. | Ensure `POSTGRES_PORT=5433` in `.env` so Docker maps `5433:5432`. |
 | `Broker transport failure` | Kafka container still booting or topic not created. | Wait 10 seconds for Kafka KRaft quorum to stabilize, then rerun `smoke.py`. |
+| `ModuleNotFoundError: No module named 'src'` | Running scripts without package in Python path. | Use `python -m src.<module>` or run `pip install -e .` from project root. |
 | `Execution_Policies` on PowerShell | PowerShell script execution disabled. | Run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`. |
