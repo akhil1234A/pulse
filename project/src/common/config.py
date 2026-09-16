@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     environment: str = Field(default="development", validation_alias="ENVIRONMENT")
     metrics_port: int = Field(default=9100, validation_alias="METRICS_PORT")
 
+    # API Server
+    api_host: str = Field(default="0.0.0.0", validation_alias="API_HOST")
+    api_port: int = Field(default=8000, validation_alias="API_PORT")
+
     # Ingestion Service
     ingestion_wikipedia_enabled: bool = Field(
         default=True, validation_alias="INGESTION_WIKIPEDIA_ENABLED"

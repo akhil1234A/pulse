@@ -268,30 +268,30 @@ REST API, WebSocket, and real-time dashboard.
 ### Activities
 
 #### 4.1 FastAPI REST Endpoints
-- [ ] `GET /api/v1/health` — check Kafka, Redis, PostgreSQL
-- [ ] `GET /api/v1/metrics/realtime` — events/sec, active users, totals (from Redis)
-- [ ] `GET /api/v1/metrics/trending` — top communities (from Redis)
-- [ ] `GET /api/v1/events` — paginated + filtered (PostgreSQL):
+- [x] `GET /api/v1/health` — check Kafka, Redis, PostgreSQL
+- [x] `GET /api/v1/metrics/realtime` — events/sec, active users, totals (from Redis)
+- [x] `GET /api/v1/metrics/trending` — top communities (from Redis)
+- [x] `GET /api/v1/events` — paginated + filtered (PostgreSQL):
   - Query params: `type`, `source`, `community`, `from`, `to`, `page`, `limit`
-- [ ] `GET /api/v1/events/{event_id}` — single event
-- [ ] `GET /api/v1/anomalies` — recent anomalies (PostgreSQL)
-- [ ] Response caching in Redis (TTL 30s for aggregation queries)
-- [ ] Rate limiting middleware (100 req/min per IP)
-- [ ] CORS middleware
-- [ ] Prometheus metrics for request latency
-- [ ] Auto-generated OpenAPI docs at `/docs`
-- [ ] Unit tests for all endpoints
+- [x] `GET /api/v1/events/{event_id}` — single event
+- [x] `GET /api/v1/anomalies` — recent anomalies (PostgreSQL)
+- [x] Response caching in Redis (TTL 30s for aggregation queries)
+- [x] Rate limiting middleware (100 req/min per IP)
+- [x] CORS middleware
+- [x] Prometheus metrics for request latency
+- [x] Auto-generated OpenAPI docs at `/docs`
+- [x] Unit tests for all endpoints
 
 #### 4.2 WebSocket Endpoint
-- [ ] `WS /api/v1/ws/dashboard` — push updates every 1 second
-- [ ] Aggregate real-time data from Redis each cycle
-- [ ] Push: events/sec, active users, totals, trending, recent anomalies
-- [ ] Handle connect/disconnect/heartbeat
-- [ ] Cap at 50 concurrent connections
+- [x] `WS /api/v1/ws/dashboard` — push updates every 1 second
+- [x] Aggregate real-time data from Redis each cycle
+- [x] Push: events/sec, active users, totals, trending, recent anomalies
+- [x] Handle connect/disconnect/heartbeat
+- [x] Cap at 50 concurrent connections
 
 #### 4.3 Dashboard UI
-- [ ] Vanilla HTML/CSS/JS (no framework, no build step)
-- [ ] Layout:
+- [x] Vanilla HTML/CSS/JS (no framework, no build step)
+- [x] Layout:
   ```
   ┌─────────────────────────────────────────┐
   │  PulseStream                 ● Live     │
@@ -314,20 +314,20 @@ REST API, WebSocket, and real-time dashboard.
   │ └────────────────────────────┘│        │
   └───────────────────────────────────────┘
   ```
-- [ ] WebSocket connection with auto-reconnect
-- [ ] Smooth number animations (counter transitions)
-- [ ] Live event stream (last 50 events, auto-scroll)
-- [ ] Trending with trend indicators (↑ ↓ →)
-- [ ] Anomaly alerts with severity colors
-- [ ] Search form → REST API → results table
-- [ ] Connection status indicator (● Live / ● Disconnected)
-- [ ] Dark theme, modern design
-- [ ] Serve as static files from FastAPI (`app.mount("/", StaticFiles(...))`)
+- [x] WebSocket connection with auto-reconnect
+- [x] Smooth number animations (counter transitions)
+- [x] Live event stream (last 50 events, auto-scroll)
+- [x] Trending with trend indicators (↑ ↓ →)
+- [x] Anomaly alerts with severity colors
+- [x] Search form → REST API → results table
+- [x] Connection status indicator (● Live / ● Disconnected)
+- [x] Dark theme, modern design
+- [x] Serve as static files from FastAPI (`app.mount("/", StaticFiles(...))`)
 
 #### 4.4 Dockerize API
-- [ ] Dockerfile (uvicorn, single worker)
-- [ ] Add to docker-compose.yml
-- [ ] Mount dashboard static files
+- [x] Dockerfile (uvicorn, single worker)
+- [x] Add to docker-compose.yml
+- [x] Mount dashboard static files
 
 ### Definition of Done
 ```text

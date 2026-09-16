@@ -47,6 +47,14 @@ def anomaly_community_key(community_id: str) -> str:
     return f"ps:anomaly:community:{community_id}"
 
 
+def recent_events_key() -> str:
+    return "ps:recent:events"
+
+
+def recent_anomalies_key() -> str:
+    return "ps:anomalies:recent"
+
+
 def cache_key(endpoint_hash: str) -> str:
     return f"ps:cache:{endpoint_hash}"
 

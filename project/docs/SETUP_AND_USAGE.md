@@ -455,6 +455,53 @@ docker exec -it pulsestream-postgres psql -U pulsestream -d pulsestream -c "SELE
 
 ---
 
+## 7.5 Phase 4: Running the API Server & Real-Time Dashboard
+
+The API Server provides REST endpoints, WebSocket streaming, and serves the dark-theme glassmorphism dashboard.
+
+### 1. Launch the API Server Locally
+```powershell
+# Using make:
+make api
+
+# Or directly:
+python -m src.api.main
+```
+Or run as a containerized service with:
+```powershell
+docker compose -f docker/docker-compose.yml up -d api-server
+```
+
+### 2. Access the Dashboard & Documentation
+- **Live Real-Time Dashboard**: Navigate to [http://localhost:8000](http://localhost:8000) in your browser.
+  - Live metric KPI counters (Throughput, Events Today, Active Users, Anomalies) animate dynamically.
+  - Live Event Feed streams real-time events via WebSocket with instant pause, search, and type/source filters.
+  - Clicking any event opens an inspection modal displaying full JSON payload details.
+  - Trending Communities and Anomaly alert feeds update continuously.
+- **Interactive OpenAPI Documentation**: Visit [http://localhost:8000/docs](http://localhost:8000/docs).
+- **Prometheus Metrics**: Scraped at [http://localhost:8000/metrics](http://localhost:8000/metrics).
+
+### 3. Test REST Endpoints via CLI
+```powershell
+# Health check (Kafka, Redis, PostgreSQL)
+curl http://localhost:8000/api/v1/health
+
+# Real-time metrics
+curl http://localhost:8000/api/v1/metrics/realtime
+
+# Top trending communities
+curl http://localhost:8000/api/v1/metrics/trending?limit=5
+
+# Paginated & filtered events
+curl "http://localhost:8000/api/v1/events?page=1&page_size=10&event_type=POST_CREATED"
+
+# Recent anomalies
+curl "http://localhost:8000/api/v1/anomalies?limit=10&severity=CRITICAL"
+```
+
+
+---
+
 ## 8. Tear Down & Reset
 
 ### Stop Infrastructure

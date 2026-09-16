@@ -18,6 +18,7 @@ from src.common.redis_utils import (
     community_count_key,
     events_per_sec_key,
     events_today_key,
+    recent_events_key,
     source_count_key,
     trending_communities_key,
     type_count_key,
@@ -88,8 +89,13 @@ class AggregationWorker(BaseWorker):
                     # 6. Events per second rate tracker (timestamp -> count)
                     pipe.zadd(events_per_sec_key(), {f"{ev.event_id}:{now_ts}": now_ts})
 
+                    # 7. Recent events list for dashboard
+                    pipe.lpush(recent_events_key(), ev.model_dump_json())
+
                 # Trim events older than 60s from rate tracker
                 pipe.zremrangebyscore(events_per_sec_key(), 0, cutoff_ts)
+                # Trim recent events list to latest 50
+                pipe.ltrim(recent_events_key(), 0, 49)
 
                 await pipe.execute()
                 self.redis_circuit.record_success()

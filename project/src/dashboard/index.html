@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulseStream | Real-Time Event Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="dark-theme">
+  <div class="app-layout">
+    <!-- Top Header -->
+    <header class="header-bar">
+      <div class="header-brand">
+        <div class="brand-logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="pulse-icon">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>PulseStream</h1>
+          <span class="brand-subtitle">Real-Time Community Event Engine</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="event-ticker">
+          <span class="ticker-label">SOURCES:</span>
+          <span class="ticker-badge ticker-wiki" id="ticker-wiki">Wikipedia: <strong id="ticker-wiki-val">0</strong></span>
+          <span class="ticker-badge ticker-sim" id="ticker-sim">Simulator: <strong id="ticker-sim-val">0</strong></span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="connection-status-pill" id="ws-status-pill">
+          <span class="status-dot pulse" id="ws-status-dot"></span>
+          <span class="status-text" id="ws-status-text">Connecting...</span>
+        </div>
+        <a href="/docs" target="_blank" class="docs-link" title="OpenAPI Documentation">
+          <span>API Docs</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="dashboard-container">
+      <!-- 4 Stat Metric Cards -->
+      <section class="stat-grid" aria-label="Key Performance Indicators">
+        <div class="stat-card" id="card-rate">
+          <div class="stat-card-glow"></div>
+          <div class="stat-header">
+            <span class="stat-title">Throughput</span>
+            <span class="stat-badge badge-rate">LIVE</span>
+          </div>
+          <div class="stat-value-container">
+            <span class="stat-value" id="stat-rate">0.0</span>
+            <span class="stat-unit">events/sec</span>
+          </div>
+          <div class="stat-footer">
+            <span class="stat-subtext">Rolling 5-sec window</span>
+          </div>
+        </div>
+
+        <div class="stat-card" id="card-total">
+          <div class="stat-card-glow"></div>
+          <div class="stat-header">
+            <span class="stat-title">Events Today</span>
+            <span class="stat-badge badge-total">24H</span>
+          </div>
+          <div class="stat-value-container">
+            <span class="stat-value" id="stat-total">0</span>
+            <span class="stat-unit">processed</span>
+          </div>
+          <div class="stat-footer">
+            <span class="stat-subtext">Daily volume count</span>
+          </div>
+        </div>
+
+        <div class="stat-card" id="card-users">
+          <div class="stat-card-glow"></div>
+          <div class="stat-header">
+            <span class="stat-title">Active Users</span>
+            <span class="stat-badge badge-users">HLL</span>
+          </div>
+          <div class="stat-value-container">
+            <span class="stat-value" id="stat-users">0</span>
+            <span class="stat-unit">unique users</span>
+          </div>
+          <div class="stat-footer">
+            <span class="stat-subtext">HyperLogLog estimate</span>
+          </div>
+        </div>
+
+        <div class="stat-card" id="card-anomalies">
+          <div class="stat-card-glow"></div>
+          <div class="stat-header">
+            <span class="stat-title">Anomalies</span>
+            <span class="stat-badge badge-anomalies" id="badge-anomalies-count">0 DETECTED</span>
+          </div>
+          <div class="stat-value-container">
+            <span class="stat-value" id="stat-anomalies">0</span>
+            <span class="stat-unit">alerts</span>
+          </div>
+          <div class="stat-footer">
+            <span class="stat-subtext">Real-time detector</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dashboard Multi-Column Layout -->
+      <section class="dashboard-columns">
+        <!-- Left Column: Live Event Stream (65% width) -->
+        <div class="stream-panel glass-card">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <h2>Live Event Stream</h2>
+              <span class="feed-indicator">
+                <span class="pulse-ring"></span>
+                <span>Streaming</span>
+              </span>
+            </div>
+
+            <!-- Controls: Filters and Search -->
+            <div class="stream-controls">
+              <div class="search-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="event-search-input" placeholder="Filter by community, user, title...">
+              </div>
+
+              <div class="filter-group">
+                <select id="event-type-filter" class="custom-select">
+                  <option value="ALL">All Types</option>
+                  <option value="POST_CREATED">POST_CREATED</option>
+                  <option value="COMMENT_CREATED">COMMENT_CREATED</option>
+                  <option value="REACTION_ADDED">REACTION_ADDED</option>
+                  <option value="USER_JOINED">USER_JOINED</option>
+                </select>
+
+                <select id="event-source-filter" class="custom-select">
+                  <option value="ALL">All Sources</option>
+                  <option value="WIKIPEDIA">Wikipedia</option>
+                  <option value="SIMULATOR">Simulator</option>
+                </select>
+
+                <button id="pause-stream-btn" class="icon-btn" title="Pause / Resume stream">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="pause-icon"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                  <span id="pause-btn-text">Pause</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Event Feed List -->
+          <div class="feed-container" id="event-feed">
+            <div class="empty-state" id="feed-empty-state">
+              <div class="spinner"></div>
+              <p>Listening for real-time events from Kafka & Redis...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Trending & Anomalies (35% width) -->
+        <aside class="sidebar-panel">
+          <!-- Trending Communities Card -->
+          <div class="trending-card glass-card">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                <h3>Trending Communities</h3>
+              </div>
+              <span class="panel-sub-label">ZSET Velocity</span>
+            </div>
+
+            <div class="trending-list" id="trending-list">
+              <div class="empty-list-placeholder">No trending communities yet</div>
+            </div>
+          </div>
+
+          <!-- Recent Anomalies Card -->
+          <div class="anomalies-card glass-card">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <h3>Recent Anomalies</h3>
+              </div>
+              <span class="badge-alert-pill" id="active-anomalies-pill">Active Rules</span>
+            </div>
+
+            <div class="anomalies-list" id="anomalies-list">
+              <div class="empty-list-placeholder">No anomalies detected</div>
+            </div>
+          </div>
+
+          <!-- Breakdown Distribution Card -->
+          <div class="distribution-card glass-card">
+            <div class="panel-header">
+              <h3>Event Type Distribution</h3>
+            </div>
+            <div class="distribution-bars" id="distribution-bars">
+              <div class="dist-row">
+                <div class="dist-meta"><span>POST_CREATED</span><span id="dist-count-post">0</span></div>
+                <div class="dist-progress"><div class="dist-fill post-fill" id="dist-bar-post" style="width: 0%"></div></div>
+              </div>
+              <div class="dist-row">
+                <div class="dist-meta"><span>COMMENT_CREATED</span><span id="dist-count-comment">0</span></div>
+                <div class="dist-progress"><div class="dist-fill comment-fill" id="dist-bar-comment" style="width: 0%"></div></div>
+              </div>
+              <div class="dist-row">
+                <div class="dist-meta"><span>REACTION_ADDED</span><span id="dist-count-reaction">0</span></div>
+                <div class="dist-progress"><div class="dist-fill reaction-fill" id="dist-bar-reaction" style="width: 0%"></div></div>
+              </div>
+              <div class="dist-row">
+                <div class="dist-meta"><span>USER_JOINED</span><span id="dist-count-joined">0</span></div>
+                <div class="dist-progress"><div class="dist-fill joined-fill" id="dist-bar-joined" style="width: 0%"></div></div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <!-- Event Detail Modal -->
+    <div class="modal-overlay" id="event-modal" aria-hidden="true">
+      <div class="modal-container glass-card">
+        <div class="modal-header">
+          <h3 id="modal-title">Event Inspection</h3>
+          <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <pre><code id="modal-json" class="json-viewer"></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

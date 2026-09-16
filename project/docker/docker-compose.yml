@@ -206,6 +206,42 @@ services:
     networks:
       - pulsestream
 
+  api-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: pulsestream-api-server
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      REDIS_URL: "redis://redis:6379/0"
+      POSTGRES_HOST: "postgresql"
+      POSTGRES_PORT: 5432
+      API_HOST: "0.0.0.0"
+      API_PORT: 8000
+      LOG_LEVEL: "INFO"
+    ports:
+      - "8000:8000"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    networks:
+      - pulsestream
+
 networks:
   pulsestream:
     name: pulsestream
