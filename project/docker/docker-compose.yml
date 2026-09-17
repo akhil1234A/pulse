@@ -27,10 +27,11 @@ services:
           cpus: "1.0"
           memory: 1G
     healthcheck:
-      test: ["CMD-SHELL", "kafka-cluster cluster-id --bootstrap-server localhost:9092 || exit 1"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD-SHELL", "nc -z localhost 9092 || exit 1"]
+      interval: 5s
+      timeout: 3s
       retries: 5
+      start_period: 30s
     networks:
       - pulsestream
 
@@ -136,6 +137,8 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+    volumes:
+      - ../src:/app/src
     deploy:
       resources:
         limits:
@@ -167,6 +170,8 @@ services:
         condition: service_healthy
       postgresql:
         condition: service_healthy
+    volumes:
+      - ../src:/app/src
     deploy:
       resources:
         limits:
@@ -198,6 +203,8 @@ services:
         condition: service_healthy
       postgresql:
         condition: service_healthy
+    volumes:
+      - ../src:/app/src
     deploy:
       resources:
         limits:
@@ -234,6 +241,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    volumes:
+      - ../src:/app/src
     deploy:
       resources:
         limits:

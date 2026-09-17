@@ -7,8 +7,8 @@ from src.common.config import get_settings
 
 
 # Key schema builders matching Section 2.3 of Technical Specification
-def dedup_key(event_id: str) -> str:
-    return f"ps:dedup:{event_id}"
+def dedup_key(event_id: str, prefix: str = "ps:dedup") -> str:
+    return f"{prefix}:{event_id}"
 
 
 def events_today_key() -> str:
@@ -61,15 +61,25 @@ def cache_key(endpoint_hash: str) -> str:
 
 # Client factories
 def get_redis_client(redis_url: Optional[str] = None) -> redis.Redis:
-    """Returns a synchronous Redis client with connection pooling."""
+    """Returns a synchronous Redis client with connection pooling and timeouts."""
     url = redis_url or get_settings().redis_url
-    return redis.Redis.from_url(url, decode_responses=True)
+    return redis.Redis.from_url(
+        url,
+        decode_responses=True,
+        socket_timeout=1.5,
+        socket_connect_timeout=1.5,
+    )
 
 
 def get_async_redis_client(redis_url: Optional[str] = None) -> aioredis.Redis:
-    """Returns an asynchronous Redis client with connection pooling."""
+    """Returns an asynchronous Redis client with connection pooling and timeouts."""
     url = redis_url or get_settings().redis_url
-    return aioredis.from_url(url, decode_responses=True)
+    return aioredis.from_url(
+        url,
+        decode_responses=True,
+        socket_timeout=1.5,
+        socket_connect_timeout=1.5,
+    )
 
 
 # Synchronous deduplication helpers
@@ -113,11 +123,12 @@ async def check_and_set_dedup_async(
     client: aioredis.Redis,
     event_id: str,
     ttl_seconds: int = 3600,
+    prefix: str = "ps:dedup",
 ) -> bool:
     """Async atomically marks an event as seen if not already present.
 
     Returns True if the event was already seen (duplicate), False if it is new.
     """
-    key = dedup_key(event_id)
+    key = dedup_key(event_id, prefix=prefix)
     was_set = await client.set(key, "1", ex=ttl_seconds, nx=True)
     return not was_set

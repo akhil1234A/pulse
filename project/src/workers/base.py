@@ -98,22 +98,29 @@ class BaseWorker(ABC):
         # 5. Health check web endpoint
         await self._start_health_server()
 
-        # 6. Prometheus exporter if configured
-        start_metrics_exporter(self.settings.metrics_port)
+        # 6. Prometheus exporter if configured on distinct port
+        if self.settings.metrics_port != self.health_port:
+            start_metrics_exporter(self.settings.metrics_port)
 
     async def _start_health_server(self) -> None:
-        """Starts a lightweight HTTP server exposing /health."""
+        """Starts a lightweight HTTP server exposing /health and /metrics."""
         app = web.Application()
         app.router.add_get("/health", self._handle_health)
+        app.router.add_get("/metrics", self._handle_metrics)
 
         self._health_runner = web.AppRunner(app)
         await self._health_runner.setup()
         site = web.TCPSite(self._health_runner, "0.0.0.0", self.health_port)
         try:
             await site.start()
-            logger.info("%s health check listening on port %d", self.worker_type, self.health_port)
+            logger.info("%s health and metrics check listening on port %d", self.worker_type, self.health_port)
         except Exception as e:
             logger.warning("Failed to bind health check port %d: %s", self.health_port, e)
+
+    async def _handle_metrics(self, request: web.Request) -> web.Response:
+        """Prometheus metrics scrape endpoint."""
+        from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+        return web.Response(body=generate_latest(), headers={"Content-Type": CONTENT_TYPE_LATEST})
 
     async def _handle_health(self, request: web.Request) -> web.Response:
         """Health check handler returning worker status and dependency state."""
@@ -199,8 +206,17 @@ class BaseWorker(ABC):
             # Graceful degradation: allow event through if Redis is unavailable
             return False
 
+        prefix = "ps:dedup" if self.worker_type == "aggregation" else f"ps:dedup:{self.worker_type}"
         try:
-            return await check_and_set_dedup_async(self._redis_client, event_id, ttl_seconds=ttl_seconds)
+            return await asyncio.wait_for(
+                check_and_set_dedup_async(
+                    self._redis_client,
+                    event_id,
+                    ttl_seconds=ttl_seconds,
+                    prefix=prefix,
+                ),
+                timeout=1.5,
+            )
         except Exception as e:
             logger.warning("Redis dedup check error (degraded to allow): %s", e)
             self.redis_circuit.record_failure()
@@ -254,7 +270,7 @@ class BaseWorker(ABC):
 
                 # 4. Commit Kafka offsets synchronously
                 if self._consumer and self._running:
-                    await loop.run_in_executor(None, self._consumer.commit, False)
+                    await loop.run_in_executor(None, lambda: self._consumer.commit(asynchronous=False))
 
                 latency = time.monotonic() - batch_start
                 WORKER_PROCESSING_LATENCY_SECONDS.labels(worker_type=self.worker_type).observe(latency)

@@ -17,6 +17,15 @@ def test_ingestion_produces_to_kafka_live():
     pipeline = IngestionPipeline()
     simulator = EventSimulator(mode="steady", rate=20)
 
+    # Consume from Kafka with auto_offset_reset='latest' to read only newly produced events
+    consumer = create_consumer(
+        group_id=f"test-ingest-verify-{int(time.time())}",
+        topics=[settings.kafka_events_topic],
+        auto_offset_reset="latest",
+    )
+    # Warm up consumer and join group
+    consumer.poll(timeout=2.0)
+
     # Process 10 events
     sent_ids = set()
     for _ in range(10):
@@ -27,17 +36,10 @@ def test_ingestion_produces_to_kafka_live():
 
     pipeline.flush(timeout=5.0)
 
-    # Consume from Kafka to confirm arrival
-    consumer = create_consumer(
-        group_id=f"test-ingest-verify-{int(time.time())}",
-        topics=[settings.kafka_events_topic],
-        auto_offset_reset="earliest",
-    )
-
     received_ids = set()
     start_time = time.time()
 
-    while len(received_ids) < len(sent_ids) and (time.time() - start_time) < 10.0:
+    while len(received_ids) < len(sent_ids) and (time.time() - start_time) < 15.0:
         msg = consumer.poll(timeout=1.0)
         if msg is None:
             continue

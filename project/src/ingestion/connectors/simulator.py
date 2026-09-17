@@ -10,8 +10,6 @@ import time
 from typing import Any, AsyncGenerator, Deque, Dict, List, Optional
 import uuid
 
-import numpy as np
-
 from src.common.models import EventSource, EventType
 
 logger = logging.getLogger(__name__)
@@ -85,20 +83,19 @@ class EventSimulator:
 
         # Precompute Zipf probabilities for communities and users
         self._user_pool: List[str] = [f"usr_{i:04d}" for i in range(1, self.num_users + 1)]
-        self._comm_probs = self._compute_zipf_probabilities(len(COMMUNITIES), self.zipf_alpha)
-        self._user_probs = self._compute_zipf_probabilities(self.num_users, self.zipf_alpha)
+        self._comm_weights = self._compute_zipf_weights(len(COMMUNITIES), self.zipf_alpha)
+        self._user_weights = self._compute_zipf_weights(self.num_users, self.zipf_alpha)
 
     @staticmethod
-    def _compute_zipf_probabilities(n: int, alpha: float) -> np.ndarray:
-        ranks = np.arange(1, n + 1)
-        weights = 1.0 / np.power(ranks, alpha)
-        return weights / np.sum(weights)
+    def _compute_zipf_weights(n: int, alpha: float) -> List[float]:
+        """Calculates unnormalized or normalized Zipfian weights for rank 1..n."""
+        return [1.0 / (i ** alpha) for i in range(1, n + 1)]
 
     def _sample_community(self) -> str:
-        return np.random.choice(COMMUNITIES, p=self._comm_probs)
+        return random.choices(COMMUNITIES, weights=self._comm_weights, k=1)[0]
 
     def _sample_user(self) -> str:
-        return np.random.choice(self._user_pool, p=self._user_probs)
+        return random.choices(self._user_pool, weights=self._user_weights, k=1)[0]
 
     def _sample_event_type(self) -> EventType:
         types, weights = zip(*EVENT_TYPE_WEIGHTS)

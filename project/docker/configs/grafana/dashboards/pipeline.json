@@ -4,7 +4,7 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": null,
   "links": [],
   "liveNow": true,
@@ -40,7 +40,7 @@
         "y": 0
       },
       "id": 2,
-      "title": "Worker Processing Throughput",
+      "title": "Worker Processing Throughput (events/sec)",
       "type": "timeseries",
       "targets": [
         {
@@ -62,7 +62,75 @@
         "y": 8
       },
       "id": 3,
-      "title": "Consumer Lag",
+      "title": "Worker Processing Latency (Seconds)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "histogram_quantile(0.50, sum(rate(worker_processing_latency_seconds_bucket[1m])) by (le))",
+          "legendFormat": "P50 Latency"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum(rate(worker_processing_latency_seconds_bucket[1m])) by (le))",
+          "legendFormat": "P95 Latency"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "histogram_quantile(0.99, sum(rate(worker_processing_latency_seconds_bucket[1m])) by (le))",
+          "legendFormat": "P99 Latency"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "title": "PostgreSQL Storage Latency & Throughput",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "rate(storage_batch_insert_latency_seconds_sum[1m]) / rate(storage_batch_insert_latency_seconds_count[1m])",
+          "legendFormat": "Avg Insert Latency (s)"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "rate(storage_rows_inserted_total[1m])",
+          "legendFormat": "Rows Inserted / sec"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 5,
+      "title": "Kafka Consumer Lag per Group",
       "type": "timeseries",
       "targets": [
         {
@@ -81,10 +149,40 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 16
       },
-      "id": 4,
-      "title": "Circuit Breaker State (0=Closed, 1=Half-Open, 2=Open)",
+      "id": 6,
+      "title": "Error Rate & DLQ Rejections",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum(rate(ingestion_events_rejected_total[1m])) by (error_type)",
+          "legendFormat": "Rejected: {{error_type}}"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum(rate(anomaly_detected_total[1m])) by (severity)",
+          "legendFormat": "Anomalies: {{severity}}"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 24
+      },
+      "id": 7,
+      "title": "Circuit Breaker States",
       "type": "timeseries",
       "targets": [
         {
@@ -93,7 +191,59 @@
             "uid": "Prometheus"
           },
           "expr": "circuit_breaker_state",
-          "legendFormat": "{{component}}"
+          "legendFormat": "{{component}} (0=Closed, 1=Half-Open, 2=Open)"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 24
+      },
+      "id": 8,
+      "title": "Redis Deduplication Activity",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "rate(redis_dedup_hits_total[1m])",
+          "legendFormat": "Dedup Hits / sec"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 24
+      },
+      "id": 9,
+      "title": "API & WebSocket Connections",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "api_websocket_connections",
+          "legendFormat": "Active WebSockets"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum(rate(api_request_latency_seconds_bucket[1m])) by (le))",
+          "legendFormat": "API P95 Latency (s)"
         }
       ]
     }
@@ -108,5 +258,5 @@
   },
   "title": "PulseStream System Overview",
   "uid": "pulsestream-overview",
-  "version": 1
+  "version": 2
 }

@@ -97,7 +97,7 @@ class AggregationWorker(BaseWorker):
                 # Trim recent events list to latest 50
                 pipe.ltrim(recent_events_key(), 0, 49)
 
-                await pipe.execute()
+                await asyncio.wait_for(pipe.execute(), timeout=1.5)
                 self.redis_circuit.record_success()
 
         except Exception as e:
@@ -178,8 +178,8 @@ class AggregationWorker(BaseWorker):
         # 2. Append to PostgreSQL buffer
         self._pg_buffer.extend(new_events)
 
-        # 3. Check if flush is needed
-        await self.flush_pg_buffer(force=False)
+        # 3. Flush to PostgreSQL before committing Kafka offsets
+        await self.flush_pg_buffer(force=True)
 
     async def shutdown(self) -> None:
         """Flush remaining events before exiting."""

@@ -9,8 +9,41 @@ This guide provides step-by-step instructions on setting up, understanding, runn
 - **Operating System**: Windows 10/11, macOS, or Linux.
 - **Python**: Version 3.11, 3.12, or 3.13.
 - **Docker**: Docker Desktop (with WSL2 backend on Windows) or Docker Engine on Linux.
-- **Hardware**: Minimum 8GB RAM (16GB recommended; the Docker containers are capped at ~3.3GB RAM).
+- **Hardware**: Minimum 8GB RAM (16GB recommended; Docker containers are capped at ~3.3GB total RAM).
 - **Make** *(Optional)*: `make` command utility. If `make` is not installed on Windows, equivalent PowerShell commands are documented in this guide.
+
+---
+
+## 1.1 Quick Access & Credentials Reference
+
+Here are all service URLs, ports, usernames, emails, and passwords:
+
+| Service / Interface | URL / Endpoint | Username / Email | Password | Purpose & Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| **Grafana Monitoring** | [http://localhost:3000](http://localhost:3000) | `admin` (or `admin@localhost`) | `admin` | Auto-provisioned single dashboard with 9 telemetry panels under **Dashboards &rarr; PulseStream System Overview**. |
+| **Real-Time Web Dashboard** | [http://localhost:8000](http://localhost:8000) | *None required* | *None required* | Interactive dark glassmorphism dashboard with live WebSocket streaming, KPI tickers, and event inspector. |
+| **REST API Documentation** | [http://localhost:8000/docs](http://localhost:8000/docs) | *None required* | *None required* | Interactive OpenAPI Swagger documentation for all REST endpoints and filters. ReDoc at `/redoc`. |
+| **PostgreSQL Database** | `localhost:5433` (container: `5432`) | `pulsestream` | `pulsestream` | Partitioned durable events table, anomalies table, and dead letter records. Database name: `pulsestream`. |
+| **Redis Cache & State** | `localhost:6379` | *None* | *None* | LRU caching, deduplication keys (`ps:dedup:*`), counters, and sorted sets for trending communities. |
+| **Prometheus Metrics** | [http://localhost:9090](http://localhost:9090) | *None required* | *None required* | Scrapes all pipeline services (`:9100`, `:9101`, `:9102`, `:8000`). |
+| **Apache Kafka Broker** | `localhost:9094` (container: `9092`) | *None* | *None* | 6-partition KRaft cluster. Raw topic: `pulsestream.events`, DLQ: `pulsestream.events.dlq`. |
+
+### Connection Commands Cheat-Sheet
+```powershell
+# PostgreSQL CLI (password: pulsestream)
+docker exec -it pulsestream-postgres psql -U pulsestream -d pulsestream
+# Or via local psql:
+psql -h localhost -p 5433 -U pulsestream -d pulsestream
+
+# Redis CLI
+docker exec -it pulsestream-redis redis-cli
+
+# Kafka Topic Lister
+docker exec -it pulsestream-kafka /usr/bin/kafka-topics --bootstrap-server localhost:9092 --list
+
+# Kafka Consumer Group Status
+docker exec -it pulsestream-kafka /usr/bin/kafka-consumer-groups --bootstrap-server localhost:9092 --describe --group ps-aggregation
+```
 
 ---
 
@@ -499,6 +532,58 @@ curl "http://localhost:8000/api/v1/events?page=1&page_size=10&event_type=POST_CR
 curl "http://localhost:8000/api/v1/anomalies?limit=10&severity=CRITICAL"
 ```
 
+
+---
+
+## 7.6 Phase 5: Observability, Chaos Engineering & Benchmarks
+
+Phase 5 introduces enterprise-grade observability via Grafana auto-provisioning, automated fault-injection chaos testing, and multi-tier throughput benchmarking.
+
+### 1. Grafana Single-Dashboard Observability
+1. Ensure the infrastructure is running (`docker compose -f docker/docker-compose.yml up -d`).
+2. Open [http://localhost:3000](http://localhost:3000) in your browser.
+3. Sign in with credentials:
+   - **Username / Email**: `admin`
+   - **Password**: `admin`
+4. In the left navigation menu, click **Dashboards** &rarr; open **PulseStream System Overview**.
+5. All 9 panels visualize system health and metrics:
+   - **Pipeline Throughput**: Ingestion rate vs Worker rate (ev/s)
+   - **End-to-End Processing Latency**: Histograms for P50, P95, and P99 percentiles
+   - **Kafka Consumer Lag**: Group lag across partitions
+   - **Error Rate & Dead Letter Queue**: DLQ rate and dropped payload counts
+   - **Redis Cache Activity**: Deduplication hits and command frequencies
+   - **PostgreSQL Write Latency & Batch Size**: COPY protocol durations and row counts
+   - **Circuit Breaker Status**: Postgres & Redis breaker states (Closed / Half-Open / Open)
+   - **Active WebSocket Connections**: Current connected dashboard clients
+
+### 2. Running the Chaos Engineering Test Suite
+The chaos suite tests resilience against duplicate floods, corrupt payloads, service outages, and worker crashes:
+```powershell
+# Run all chaos resilience tests
+pytest tests/chaos -v -s
+
+# Or run an individual chaos test:
+pytest tests/chaos/test_chaos.py -k test_duplicate_dedup -v -s
+pytest tests/chaos/test_chaos.py -k test_malformed_event_dlq -v -s
+pytest tests/chaos/test_chaos.py -k test_redis_unavailability -v -s
+pytest tests/chaos/test_chaos.py -k test_consumer_crash_recovery -v -s
+```
+All chaos tests automatically clean up, unpause, and restart any affected containers upon completion.
+
+### 3. Running the Performance Benchmark Suite
+The benchmark suite executes controlled multi-tier traffic runs (1,000, 3,000, and 5,000 events/sec), samples host telemetry and Prometheus metrics, and generates a performance report:
+```powershell
+# Quick mode (10 seconds per tier)
+python benchmarks/run_benchmark.py --quick
+
+# Full production mode (30 seconds per tier)
+python benchmarks/run_benchmark.py --duration 30
+
+# Test a single custom target rate (e.g. 2,000 ev/s for 20s)
+python benchmarks/run_benchmark.py --target-rate 2000 --duration 20
+```
+Upon completion, review the markdown summary generated at:
+`benchmarks/results/report.md`
 
 ---
 

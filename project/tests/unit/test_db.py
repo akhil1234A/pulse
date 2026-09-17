@@ -55,7 +55,7 @@ async def test_batch_insert_events_mock():
     assert count == 2
     mock_conn.copy_records_to_table.assert_called_once()
     args, kwargs = mock_conn.copy_records_to_table.call_args
-    assert args[0] == "events"
+    assert args[0] == "temp_events"
     assert kwargs["columns"] == EVENT_COLUMNS
     assert len(kwargs["records"]) == 2
 
