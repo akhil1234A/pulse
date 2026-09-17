@@ -4,7 +4,7 @@ import asyncio
 import time
 from typing import List, Optional
 
-from src.common.config import Settings, get_settings
+from src.common.config import Settings
 from src.common.db import batch_insert_events
 from src.common.logging import get_logger
 from src.common.metrics import (
@@ -29,7 +29,8 @@ logger = get_logger(__name__)
 
 
 class AggregationWorker(BaseWorker):
-    """Worker responsible for updating Redis aggregates and flushing events to PostgreSQL in batches."""
+    """Worker responsible for updating Redis aggregates and flushing
+    events to PostgreSQL in batches."""
 
     def __init__(
         self,
@@ -122,7 +123,9 @@ class AggregationWorker(BaseWorker):
                 return
 
             if not self._db_pool:
-                logger.warning("PostgreSQL pool not available; delaying flush of %d events.", buffer_len)
+                logger.warning(
+                    "PostgreSQL pool not available; delaying flush of %d events.", buffer_len
+                )
                 return
 
             if not self.pg_circuit.is_call_permitted():
@@ -144,7 +147,7 @@ class AggregationWorker(BaseWorker):
                 self.pg_circuit.record_success()
 
                 # Clear flushed events from buffer
-                self._pg_buffer = self._pg_buffer[len(to_insert):]
+                self._pg_buffer = self._pg_buffer[len(to_insert) :]
                 self._last_flush_time = time.monotonic()
                 logger.info(
                     "Flushed %d events to PostgreSQL in %.3fs (remaining buffer: %d)",
@@ -153,11 +156,13 @@ class AggregationWorker(BaseWorker):
                     len(self._pg_buffer),
                 )
             except Exception as e:
-                logger.error("Failed to batch insert %d events to PostgreSQL: %s", len(to_insert), e)
+                logger.error(
+                    "Failed to batch insert %d events to PostgreSQL: %s", len(to_insert), e
+                )
                 self.pg_circuit.record_failure()
 
     async def process_batch(self, events: List[PulseStreamEvent]) -> None:
-        """Processes a batch of events: deduplicates, updates aggregates, and buffers for DB flush."""
+        """Processes a batch: deduplicates, updates aggregates, and buffers for DB flush."""
         new_events: List[PulseStreamEvent] = []
 
         for ev in events:

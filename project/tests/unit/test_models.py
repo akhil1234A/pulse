@@ -1,16 +1,13 @@
 """Unit tests for event data models."""
 
-from datetime import datetime, timezone
 import json
 import uuid
-import pytest
+from datetime import datetime, timezone
+
 from src.common.models import (
     EventSource,
     EventType,
     PulseStreamEvent,
-    current_time_millis,
-    datetime_to_millis,
-    millis_to_datetime,
 )
 
 

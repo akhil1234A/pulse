@@ -1,10 +1,10 @@
 """Anomaly Detection Worker implementation for PulseStream."""
 
 import json
-from typing import List, Optional
 import uuid
+from typing import List, Optional
 
-from src.common.config import Settings, get_settings
+from src.common.config import Settings
 from src.common.logging import get_logger
 from src.common.metrics import ANOMALY_DETECTED_TOTAL
 from src.common.models import PulseStreamEvent
@@ -95,13 +95,15 @@ class AnomalyDetectionWorker(BaseWorker):
         # 3. Publish to Redis for real-time dashboard notification
         if self._redis_client and self.redis_circuit.is_call_permitted():
             try:
-                payload = json.dumps({
-                    "anomaly_type": record.anomaly_type,
-                    "severity": record.severity,
-                    "description": record.description,
-                    "details": record.details,
-                    "event_ids": record.event_ids,
-                })
+                payload = json.dumps(
+                    {
+                        "anomaly_type": record.anomaly_type,
+                        "severity": record.severity,
+                        "description": record.description,
+                        "details": record.details,
+                        "event_ids": record.event_ids,
+                    }
+                )
                 # Maintain recent anomalies list (capped at 50)
                 await self._redis_client.lpush("ps:anomalies:recent", payload)
                 await self._redis_client.ltrim("ps:anomalies:recent", 0, 49)

@@ -1,7 +1,7 @@
 """Unit tests for Kafka utilities."""
 
 from unittest.mock import MagicMock
-import pytest
+
 from src.common.kafka_utils import (
     get_consumer_config,
     get_partition_key,

@@ -1,7 +1,9 @@
 """Unit tests for database module."""
 
 from unittest.mock import AsyncMock, MagicMock
+
 import pytest
+
 from src.common.db import EVENT_COLUMNS, batch_insert_events, insert_dead_letter_event
 from src.common.models import EventSource, EventType, PulseStreamEvent
 

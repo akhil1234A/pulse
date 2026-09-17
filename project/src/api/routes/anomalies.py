@@ -2,6 +2,7 @@
 
 import json
 from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, Query, Request
 
 router = APIRouter(prefix="/api/v1/anomalies", tags=["Anomalies"])
@@ -34,7 +35,9 @@ async def list_anomalies(
     request: Request,
     limit: int = Query(default=20, ge=1, le=100, description="Maximum anomalies to return"),
     anomaly_type: Optional[str] = Query(default=None, description="Filter by anomaly type"),
-    severity: Optional[str] = Query(default=None, description="Filter by severity (WARNING, CRITICAL)"),
+    severity: Optional[str] = Query(
+        default=None, description="Filter by severity (WARNING, CRITICAL)"
+    ),
 ) -> List[Dict[str, Any]]:
     """Retrieves recent detected anomalies from PostgreSQL."""
     db_pool = getattr(request.app.state, "db_pool", None)

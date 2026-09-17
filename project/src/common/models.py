@@ -1,11 +1,13 @@
 """Data models for PulseStream events and domain types."""
 
+import json
+import uuid
 from datetime import datetime, timezone
 from enum import Enum
-import json
 from typing import Any, Dict, Optional, Union
-import uuid
+
 from pydantic import BaseModel, Field, field_validator
+
 from src.common.schemas.avro import deserialize_event, serialize_event
 
 
@@ -96,8 +98,12 @@ class PulseStreamEvent(BaseModel):
         """Converts event to dictionary format required by the Avro schema."""
         return {
             "event_id": str(self.event_id),
-            "event_type": self.event_type.value if isinstance(self.event_type, EventType) else str(self.event_type),
-            "source": self.source.value if isinstance(self.source, EventSource) else str(self.source),
+            "event_type": self.event_type.value
+            if isinstance(self.event_type, EventType)
+            else str(self.event_type),
+            "source": self.source.value
+            if isinstance(self.source, EventSource)
+            else str(self.source),
             "timestamp": int(self.timestamp),
             "user_id": str(self.user_id),
             "community_id": self.community_id,
@@ -134,10 +140,11 @@ class PulseStreamEvent(BaseModel):
     def to_db_record(self) -> tuple:
         """Converts event to a record tuple matching the PostgreSQL events table schema.
 
-        Columns:
-        (event_id, event_type, source, timestamp, user_id, community_id, payload, ingested_at, processed_at, schema_version)
+        Columns: (event_id, event_type, source, timestamp, user_id,
+        community_id, payload, ingested_at, processed_at, schema_version)
         """
         import uuid as _uuid
+
         event_uuid = _uuid.UUID(self.event_id) if isinstance(self.event_id, str) else self.event_id
         return (
             event_uuid,

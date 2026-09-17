@@ -1,7 +1,9 @@
 """Unit tests for Redis utilities and key schemes."""
 
 from unittest.mock import AsyncMock, MagicMock
+
 import pytest
+
 from src.common.redis_utils import (
     active_users_key,
     anomaly_community_key,

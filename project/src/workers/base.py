@@ -6,20 +6,17 @@ and graceful shutdown.
 """
 
 import asyncio
-import logging
-import signal
-import sys
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from aiohttp import web
-from confluent_kafka import Consumer, KafkaError, KafkaException, Message
+from confluent_kafka import Consumer, KafkaError, Message
 
 from src.common.config import Settings, get_settings
 from src.common.db import close_db_pool, create_db_pool, insert_dead_letter_event
-from src.common.kafka_utils import create_consumer, create_producer, produce_event
-from src.common.logging import get_logger, set_correlation_id
+from src.common.kafka_utils import create_consumer, create_producer
+from src.common.logging import get_logger
 from src.common.metrics import (
     WORKER_BATCH_SIZE,
     WORKER_EVENTS_PROCESSED_TOTAL,
@@ -113,13 +110,18 @@ class BaseWorker(ABC):
         site = web.TCPSite(self._health_runner, "0.0.0.0", self.health_port)
         try:
             await site.start()
-            logger.info("%s health and metrics check listening on port %d", self.worker_type, self.health_port)
+            logger.info(
+                "%s health and metrics check listening on port %d",
+                self.worker_type,
+                self.health_port,
+            )
         except Exception as e:
             logger.warning("Failed to bind health check port %d: %s", self.health_port, e)
 
     async def _handle_metrics(self, request: web.Request) -> web.Response:
         """Prometheus metrics scrape endpoint."""
         from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
         return web.Response(body=generate_latest(), headers={"Content-Type": CONTENT_TYPE_LATEST})
 
     async def _handle_health(self, request: web.Request) -> web.Response:
@@ -132,14 +134,16 @@ class BaseWorker(ABC):
             except Exception:
                 pass
 
-        return web.json_response({
-            "status": "healthy" if self._running else "stopped",
-            "worker_type": self.worker_type,
-            "group_id": self.group_id,
-            "redis_connected": redis_ok,
-            "pg_circuit": self.pg_circuit.state.name,
-            "redis_circuit": self.redis_circuit.state.name,
-        })
+        return web.json_response(
+            {
+                "status": "healthy" if self._running else "stopped",
+                "worker_type": self.worker_type,
+                "group_id": self.group_id,
+                "redis_connected": redis_ok,
+                "pg_circuit": self.pg_circuit.state.name,
+                "redis_circuit": self.redis_circuit.state.name,
+            }
+        )
 
     def _poll_raw_messages(self, max_batch_size: int, timeout: float) -> List[Message]:
         """Polls Kafka consumer synchronously in non-blocking manner to build a batch."""
@@ -169,7 +173,9 @@ class BaseWorker(ABC):
 
         return messages
 
-    async def route_to_dlq(self, raw_data: Any, error_msg: str, error_type: str = "WORKER_ERROR") -> None:
+    async def route_to_dlq(
+        self, raw_data: Any, error_msg: str, error_type: str = "WORKER_ERROR"
+    ) -> None:
         """Routes a malformed or failed event to DLQ topic and dead_letter_events table."""
         logger.error("Routing event to DLQ: error_type=%s, msg=%s", error_type, error_msg)
         if self._db_pool:
@@ -260,20 +266,30 @@ class BaseWorker(ABC):
                         valid_events.append(event)
                     except Exception as exc:
                         raw_str = val.decode("utf-8", errors="replace") if val else ""
-                        await self.route_to_dlq(raw_str, f"Deserialization error: {exc}", "DESERIALIZE_ERROR")
+                        await self.route_to_dlq(
+                            raw_str, f"Deserialization error: {exc}", "DESERIALIZE_ERROR"
+                        )
 
                 # 3. Process batch in subclass
                 if valid_events:
-                    WORKER_BATCH_SIZE.labels(worker_type=self.worker_type).observe(len(valid_events))
+                    WORKER_BATCH_SIZE.labels(worker_type=self.worker_type).observe(
+                        len(valid_events)
+                    )
                     await self.process_batch(valid_events)
-                    WORKER_EVENTS_PROCESSED_TOTAL.labels(worker_type=self.worker_type).inc(len(valid_events))
+                    WORKER_EVENTS_PROCESSED_TOTAL.labels(worker_type=self.worker_type).inc(
+                        len(valid_events)
+                    )
 
                 # 4. Commit Kafka offsets synchronously
                 if self._consumer and self._running:
-                    await loop.run_in_executor(None, lambda: self._consumer.commit(asynchronous=False))
+                    await loop.run_in_executor(
+                        None, lambda: self._consumer.commit(asynchronous=False)
+                    )
 
                 latency = time.monotonic() - batch_start
-                WORKER_PROCESSING_LATENCY_SECONDS.labels(worker_type=self.worker_type).observe(latency)
+                WORKER_PROCESSING_LATENCY_SECONDS.labels(worker_type=self.worker_type).observe(
+                    latency
+                )
 
             except Exception as exc:
                 if not self._running:

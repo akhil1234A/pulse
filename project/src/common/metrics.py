@@ -1,11 +1,11 @@
 """Prometheus metrics definitions and helper utilities."""
 
 import logging
+
 from prometheus_client import (
     Counter,
     Gauge,
     Histogram,
-    REGISTRY,
     start_http_server,
 )
 

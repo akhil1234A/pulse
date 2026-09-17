@@ -1,10 +1,12 @@
 """Unit tests for Events endpoints."""
 
+import uuid
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
-import uuid
+
 import httpx
 import pytest
+
 from src.api.main import app
 
 
@@ -16,23 +18,29 @@ async def test_list_events():
     mock_db = MagicMock()
     mock_conn = MagicMock()
     mock_conn.fetchval = AsyncMock(return_value=1)
-    mock_conn.fetch = AsyncMock(return_value=[{
-        "event_id": event_id,
-        "event_type": "POST_CREATED",
-        "source": "WIKIPEDIA",
-        "timestamp": now,
-        "user_id": "test_user",
-        "community_id": "test_comm",
-        "payload": '{"title": "Test Page"}',
-        "ingested_at": now,
-        "processed_at": now,
-        "schema_version": "1.0",
-    }])
+    mock_conn.fetch = AsyncMock(
+        return_value=[
+            {
+                "event_id": event_id,
+                "event_type": "POST_CREATED",
+                "source": "WIKIPEDIA",
+                "timestamp": now,
+                "user_id": "test_user",
+                "community_id": "test_comm",
+                "payload": '{"title": "Test Page"}',
+                "ingested_at": now,
+                "processed_at": now,
+                "schema_version": "1.0",
+            }
+        ]
+    )
     mock_db.acquire.return_value.__aenter__.return_value = mock_conn
 
     app.state.db_pool = mock_db
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as client:
         resp = await client.get("/api/v1/events?page=1&page_size=10&community_id=test_comm")
         assert resp.status_code == 200
         data = resp.json()
@@ -49,23 +57,27 @@ async def test_get_event_by_id():
 
     mock_db = MagicMock()
     mock_conn = MagicMock()
-    mock_conn.fetchrow = AsyncMock(return_value={
-        "event_id": event_id,
-        "event_type": "USER_JOINED",
-        "source": "SIMULATOR",
-        "timestamp": now,
-        "user_id": "user_123",
-        "community_id": "gaming",
-        "payload": "{}",
-        "ingested_at": now,
-        "processed_at": now,
-        "schema_version": "1.0",
-    })
+    mock_conn.fetchrow = AsyncMock(
+        return_value={
+            "event_id": event_id,
+            "event_type": "USER_JOINED",
+            "source": "SIMULATOR",
+            "timestamp": now,
+            "user_id": "user_123",
+            "community_id": "gaming",
+            "payload": "{}",
+            "ingested_at": now,
+            "processed_at": now,
+            "schema_version": "1.0",
+        }
+    )
     mock_db.acquire.return_value.__aenter__.return_value = mock_conn
 
     app.state.db_pool = mock_db
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as client:
         # Valid ID
         resp = await client.get(f"/api/v1/events/{event_id}")
         assert resp.status_code == 200

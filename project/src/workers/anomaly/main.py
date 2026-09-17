@@ -2,7 +2,6 @@
 
 import asyncio
 import signal
-import sys
 
 from src.common.config import get_settings
 from src.common.logging import get_logger, setup_logging

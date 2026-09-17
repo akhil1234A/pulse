@@ -2,7 +2,9 @@
 
 import logging
 from typing import Any, Callable, Dict, List, Optional
-from confluent_kafka import Consumer, KafkaError, KafkaException, Message, Producer
+
+from confluent_kafka import Consumer, KafkaError, Message, Producer
+
 from src.common.config import get_settings
 from src.common.models import PulseStreamEvent
 

@@ -5,7 +5,9 @@ import json
 import logging
 import time
 from typing import Any, Dict, List, Set
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+
 from src.common.metrics import API_WEBSOCKET_CONNECTIONS
 from src.common.models import EventSource, EventType
 from src.common.redis_utils import (
@@ -57,7 +59,9 @@ class ConnectionManager:
             if websocket in self.active_connections:
                 self.active_connections.remove(websocket)
                 API_WEBSOCKET_CONNECTIONS.set(len(self.active_connections))
-                logger.info("WebSocket disconnected. Total active: %d", len(self.active_connections))
+                logger.info(
+                    "WebSocket disconnected. Total active: %d", len(self.active_connections)
+                )
 
     async def broadcast(self, data: Dict[str, Any]) -> None:
         """Sends data concurrently to all active connections, cleaning up broken ones."""
@@ -140,11 +144,13 @@ async def build_dashboard_payload(redis_client: Any) -> Dict[str, Any]:
 
     trending = []
     for rank, (comm_id, score) in enumerate(raw_trending, start=1):
-        trending.append({
-            "rank": rank,
-            "community_id": comm_id,
-            "score": int(score),
-        })
+        trending.append(
+            {
+                "rank": rank,
+                "community_id": comm_id,
+                "score": int(score),
+            }
+        )
 
     raw_events = results[offset] or []
     offset += 1

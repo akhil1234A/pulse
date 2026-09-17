@@ -3,19 +3,19 @@
 import json
 import logging
 import time
-from typing import Any, Dict, Optional
 import uuid
+from typing import Any, Dict, Optional
 
 from confluent_kafka import Producer
 
 from src.common.config import get_settings
-from src.common.kafka_utils import create_producer, get_partition_key, produce_event
+from src.common.kafka_utils import create_producer, produce_event
 from src.common.logging import set_correlation_id
 from src.common.metrics import (
     INGESTION_EVENTS_REJECTED_TOTAL,
     INGESTION_EVENTS_TOTAL,
 )
-from src.common.models import EventSource, EventType, PulseStreamEvent
+from src.common.models import PulseStreamEvent
 from src.common.schemas.avro import validate_event_dict
 
 logger = logging.getLogger(__name__)

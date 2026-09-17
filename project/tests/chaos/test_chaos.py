@@ -3,12 +3,11 @@
 import asyncio
 import logging
 import time
-from typing import Generator
 import uuid
+from typing import Generator
 
 import pytest
 
-from src.common.config import get_settings
 from src.common.kafka_utils import create_producer, produce_event
 from src.common.models import EventSource, EventType, PulseStreamEvent
 from tests.chaos.chaos_runner import ChaosRunner

@@ -2,9 +2,11 @@
 
 import asyncio
 from datetime import datetime, timezone
+
 from confluent_kafka.admin import AdminClient
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
+
 from src.common.config import get_settings
 
 router = APIRouter(prefix="/api/v1", tags=["Health"])
@@ -44,10 +46,12 @@ async def health_check(request: Request):
     # 3. Check Kafka
     def _check_kafka() -> bool:
         try:
-            admin = AdminClient({
-                "bootstrap.servers": settings.kafka_bootstrap_servers,
-                "socket.timeout.ms": 2000,
-            })
+            admin = AdminClient(
+                {
+                    "bootstrap.servers": settings.kafka_bootstrap_servers,
+                    "socket.timeout.ms": 2000,
+                }
+            )
             metadata = admin.list_topics(timeout=2.0)
             return metadata is not None
         except Exception:

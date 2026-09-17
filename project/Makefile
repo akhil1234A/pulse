@@ -1,16 +1,13 @@
-.PHONY: up down logs test bench chaos reset smoke ingestion agg-worker anomaly-worker api
+.PHONY: up down logs test bench chaos reset smoke ingestion agg-worker anomaly-worker api lint format
 
-up:
-	docker compose -f docker/docker-compose.yml up -d
+lint:
+	ruff check src/ tests/
 
-down:
-	docker compose -f docker/docker-compose.yml down
-
-logs:
-	docker compose -f docker/docker-compose.yml logs -f
+format:
+	ruff format src/ tests/
 
 test:
-	pytest tests/unit
+	pytest tests/unit tests/integration
 
 bench:
 	python benchmarks/run_benchmark.py

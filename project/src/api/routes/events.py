@@ -1,9 +1,10 @@
 """Events query endpoints for PulseStream API."""
 
-from datetime import datetime
 import json
-from typing import Any, Dict, List, Optional
 import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, HTTPException, Query, Request, status
 
 router = APIRouter(prefix="/api/v1/events", tags=["Events"])

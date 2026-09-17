@@ -1,12 +1,11 @@
 """Wikipedia Recent Changes SSE stream connector with auto-reconnection and normalization."""
 
 import asyncio
-from datetime import datetime, timezone
 import json
 import logging
-import time
-from typing import Any, AsyncGenerator, Dict, List, Optional
 import uuid
+from datetime import datetime, timezone
+from typing import Any, AsyncGenerator, Dict, Optional
 
 import aiohttp
 
@@ -16,7 +15,9 @@ from src.common.retry import calculate_backoff_delay
 logger = logging.getLogger(__name__)
 
 DEFAULT_WIKIMEDIA_STREAM_URL = "https://stream.wikimedia.org/v2/stream/recentchange"
-USER_AGENT = "PulseStream/1.0 (https://github.com/pulsestream; dev@pulsestream.local) Python-aiohttp"
+USER_AGENT = (
+    "PulseStream/1.0 (https://github.com/pulsestream; dev@pulsestream.local) Python-aiohttp"
+)
 
 # Supported event type mapping per Technical Specification Section 4.1
 WIKIPEDIA_EVENT_TYPE_MAP = {

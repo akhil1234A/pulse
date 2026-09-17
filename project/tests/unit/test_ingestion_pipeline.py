@@ -2,7 +2,6 @@
 
 import json
 from unittest.mock import MagicMock
-import pytest
 
 from src.common.models import EventSource, EventType
 from src.ingestion.pipeline import IngestionPipeline

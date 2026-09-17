@@ -1,12 +1,12 @@
 """Exponential backoff with jitter and circuit breaker pattern implementation."""
 
 import asyncio
-from enum import IntEnum
-import functools
 import logging
 import random
 import time
+from enum import IntEnum
 from typing import Any, Callable, Coroutine, Optional, TypeVar
+
 from src.common.metrics import CIRCUIT_BREAKER_STATE
 
 logger = logging.getLogger(__name__)
@@ -22,6 +22,7 @@ class CircuitState(IntEnum):
 
 class CircuitBreakerOpenException(Exception):
     """Raised when an operation is attempted while the circuit breaker is OPEN."""
+
     pass
 
 
@@ -34,7 +35,7 @@ def calculate_backoff_delay(
 
     Formula: min(base_ms * 2^attempt + uniform(0, 100ms), max_ms)
     """
-    exponent_delay = base_ms * (2 ** attempt)
+    exponent_delay = base_ms * (2**attempt)
     jitter = random.uniform(0, 100.0)
     delay_ms = min(exponent_delay + jitter, max_ms)
     return delay_ms / 1000.0
@@ -86,7 +87,7 @@ class CircuitBreaker:
         )
 
     def record_success(self) -> None:
-        """Records a successful operation, transitioning HALF_OPEN -> CLOSED or resetting failures."""
+        """Records a successful op, transitioning HALF_OPEN -> CLOSED or resetting failures."""
         if self._state == CircuitState.HALF_OPEN:
             self._transition_to(CircuitState.CLOSED)
         self._consecutive_failures = 0
@@ -96,14 +97,19 @@ class CircuitBreaker:
         self._consecutive_failures += 1
         if self._state == CircuitState.HALF_OPEN:
             self._transition_to(CircuitState.OPEN)
-        elif self._state == CircuitState.CLOSED and self._consecutive_failures >= self.failure_threshold:
+        elif (
+            self._state == CircuitState.CLOSED
+            and self._consecutive_failures >= self.failure_threshold
+        ):
             self._transition_to(CircuitState.OPEN)
 
     def is_call_permitted(self) -> bool:
         """Checks if a call is allowed to execute."""
         return self.state != CircuitState.OPEN
 
-    async def call_async(self, coro_func: Callable[..., Coroutine[Any, Any, T]], *args: Any, **kwargs: Any) -> T:
+    async def call_async(
+        self, coro_func: Callable[..., Coroutine[Any, Any, T]], *args: Any, **kwargs: Any
+    ) -> T:
         """Executes an async callable protected by the circuit breaker."""
         if not self.is_call_permitted():
             raise CircuitBreakerOpenException(

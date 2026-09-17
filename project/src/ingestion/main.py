@@ -1,7 +1,6 @@
 """Service entrypoint for the PulseStream Ingestion Service."""
 
 import asyncio
-import logging
 import signal
 import sys
 from typing import List
@@ -127,7 +126,9 @@ async def main() -> None:
     # Flush Kafka producer buffer
     logger.info("Flushing Kafka producer...")
     remaining = pipeline.flush(timeout=10.0)
-    logger.info("Producer flushed (remaining un-delivered: %d). Ingestion shutdown complete.", remaining)
+    logger.info(
+        "Producer flushed (remaining un-delivered: %d). Ingestion shutdown complete.", remaining
+    )
 
 
 if __name__ == "__main__":

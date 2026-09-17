@@ -1,14 +1,14 @@
 """High-throughput synthetic event simulator with Zipf skew and chaos injection modes."""
 
 import asyncio
-from collections import deque
-from datetime import datetime, timezone
 import json
 import logging
 import random
 import time
-from typing import Any, AsyncGenerator, Deque, Dict, List, Optional
 import uuid
+from collections import deque
+from datetime import datetime, timezone
+from typing import Any, AsyncGenerator, Deque, Dict, List
 
 from src.common.models import EventSource, EventType
 
@@ -89,7 +89,7 @@ class EventSimulator:
     @staticmethod
     def _compute_zipf_weights(n: int, alpha: float) -> List[float]:
         """Calculates unnormalized or normalized Zipfian weights for rank 1..n."""
-        return [1.0 / (i ** alpha) for i in range(1, n + 1)]
+        return [1.0 / (i**alpha) for i in range(1, n + 1)]
 
     def _sample_community(self) -> str:
         return random.choices(COMMUNITIES, weights=self._comm_weights, k=1)[0]

@@ -1,8 +1,8 @@
 """Unit tests for the synthetic EventSimulator."""
 
-import asyncio
-from collections import Counter
 import json
+from collections import Counter
+
 import pytest
 
 from src.common.models import EventSource, EventType

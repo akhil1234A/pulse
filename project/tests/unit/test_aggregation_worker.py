@@ -1,6 +1,7 @@
 """Unit tests for AggregationWorker."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 
 from src.common.config import Settings
@@ -71,7 +72,9 @@ async def test_flush_pg_buffer_size_threshold(sample_events):
     worker._db_pool = MagicMock()
     worker._pg_buffer = list(sample_events)  # 5 items > threshold of 2
 
-    with patch("src.workers.aggregation.aggregator.batch_insert_events", new=AsyncMock(return_value=5)) as mock_insert:
+    with patch(
+        "src.workers.aggregation.aggregator.batch_insert_events", new=AsyncMock(return_value=5)
+    ) as mock_insert:
         await worker.flush_pg_buffer(force=False)
         mock_insert.assert_called_once()
         assert len(worker._pg_buffer) == 0
@@ -85,7 +88,9 @@ async def test_flush_pg_buffer_circuit_breaker_open(sample_events):
     # Trip circuit breaker
     worker.pg_circuit._transition_to(worker.pg_circuit.state.OPEN)
 
-    with patch("src.workers.aggregation.aggregator.batch_insert_events", new=AsyncMock()) as mock_insert:
+    with patch(
+        "src.workers.aggregation.aggregator.batch_insert_events", new=AsyncMock()
+    ) as mock_insert:
         await worker.flush_pg_buffer(force=False)
         mock_insert.assert_not_called()
         # Buffer should be retained

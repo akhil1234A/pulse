@@ -1,7 +1,9 @@
 """Unit tests for WebSocket ConnectionManager."""
 
 from unittest.mock import AsyncMock, MagicMock
+
 import pytest
+
 from src.api.websocket import ConnectionManager, build_dashboard_payload
 
 
@@ -53,16 +55,22 @@ async def test_connection_manager_broadcast():
 async def test_build_dashboard_payload():
     mock_redis = MagicMock()
     mock_pipe = MagicMock()
-    mock_pipe.execute = AsyncMock(return_value=[
-        500,  # total_today
-        120,  # active_users
-        25,   # count_5s -> 5.0 eps
-        10, 5, 2, 1, # types
-        12, 6,       # sources
-        [("tech", 40.0)], # trending
-        ['{"event_id": "e1", "event_type": "POST_CREATED"}'], # recent events
-        ['{"anomaly_type": "SPIKE", "severity": "WARNING"}'], # recent anomalies
-    ])
+    mock_pipe.execute = AsyncMock(
+        return_value=[
+            500,  # total_today
+            120,  # active_users
+            25,  # count_5s -> 5.0 eps
+            10,
+            5,
+            2,
+            1,  # types
+            12,
+            6,  # sources
+            [("tech", 40.0)],  # trending
+            ['{"event_id": "e1", "event_type": "POST_CREATED"}'],  # recent events
+            ['{"anomaly_type": "SPIKE", "severity": "WARNING"}'],  # recent anomalies
+        ]
+    )
     mock_redis.pipeline.return_value = mock_pipe
 
     payload = await build_dashboard_payload(mock_redis)

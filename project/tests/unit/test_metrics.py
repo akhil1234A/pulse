@@ -1,6 +1,5 @@
 """Unit tests for Prometheus metrics definitions."""
 
-import pytest
 from src.common.metrics import (
     ANOMALY_DETECTED_TOTAL,
     API_REQUEST_LATENCY_SECONDS,

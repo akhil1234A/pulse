@@ -2,8 +2,10 @@
 
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
+
 import asyncpg
+
 from src.common.config import get_settings
 from src.common.models import PulseStreamEvent
 
@@ -70,10 +72,11 @@ async def batch_insert_events(
                 columns=EVENT_COLUMNS,
             )
             # Merge into main partitioned table with ON CONFLICT DO NOTHING
+            cols_str = ", ".join(EVENT_COLUMNS)
             await conn.execute(
-                """
-                INSERT INTO events (event_id, event_type, source, timestamp, user_id, community_id, payload, ingested_at, processed_at, schema_version)
-                SELECT event_id, event_type, source, timestamp, user_id, community_id, payload, ingested_at, processed_at, schema_version
+                f"""
+                INSERT INTO events ({cols_str})
+                SELECT {cols_str}
                 FROM temp_events
                 ON CONFLICT (event_id, timestamp) DO NOTHING;
                 """

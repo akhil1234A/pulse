@@ -1,6 +1,7 @@
 """Integration test verifying IngestionPipeline end-to-end with live Kafka broker."""
 
 import time
+
 import pytest
 from confluent_kafka import KafkaException
 

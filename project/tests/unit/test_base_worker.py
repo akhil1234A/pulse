@@ -1,9 +1,9 @@
 """Unit tests for BaseWorker framework."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 
-from src.common.config import Settings
 from src.common.models import EventSource, EventType, PulseStreamEvent
 from src.workers.base import BaseWorker
 
@@ -68,7 +68,9 @@ async def test_route_to_dlq():
     worker._db_pool = MagicMock()
     worker._producer = MagicMock()
 
-    with patch("src.workers.base.insert_dead_letter_event", new=AsyncMock(return_value=1)) as mock_insert:
+    with patch(
+        "src.workers.base.insert_dead_letter_event", new=AsyncMock(return_value=1)
+    ) as mock_insert:
         await worker.route_to_dlq(
             raw_data={"invalid": True},
             error_msg="Test error",

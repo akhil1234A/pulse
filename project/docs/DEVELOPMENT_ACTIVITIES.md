@@ -349,7 +349,7 @@ Grafana dashboard, chaos tests, benchmark report. This is what makes the project
 ### Activities
 
 #### 5.1 Grafana Dashboard
-- [ ] Provision single dashboard JSON:
+- [x] Provision single dashboard JSON:
   - Events/sec throughput graph
   - End-to-end latency histogram (P50/P95/P99)
   - Kafka consumer lag per group
@@ -357,11 +357,11 @@ Grafana dashboard, chaos tests, benchmark report. This is what makes the project
   - Redis memory + ops/sec
   - PostgreSQL write latency
   - Circuit breaker states
-- [ ] Auto-provisioned on startup (no manual config)
-- [ ] Verify all panels populate with real data
+- [x] Auto-provisioned on startup (no manual config)
+- [x] Verify all panels populate with real data
 
 #### 5.2 Chaos Test Framework
-- [ ] `ChaosRunner` class using Docker SDK:
+- [x] `ChaosRunner` class using Docker SDK:
   ```python
   def kill_container(self, service)
   def pause_container(self, service)
@@ -370,40 +370,40 @@ Grafana dashboard, chaos tests, benchmark report. This is what makes the project
   ```
 
 #### 5.3 Chaos Tests (4 tests)
-- [ ] **Test 1: Consumer Crash Recovery**
+- [x] **Test 1: Consumer Crash Recovery**
   - Pipeline at 500 events/sec
   - Kill agg-worker container
   - Wait 30s, restart
   - Assert: no events lost (count before == count after)
   - Assert: worker resumes from last committed offset
 
-- [ ] **Test 2: Duplicate Dedup**
+- [x] **Test 2: Duplicate Dedup**
   - Inject 100 duplicate events (same event_id)
   - Assert: PostgreSQL has exactly 1 copy of each
   - Assert: Redis dedup counters reflect hits
 
-- [ ] **Test 3: Malformed Event DLQ**
+- [x] **Test 3: Malformed Event DLQ**
   - Inject 50 malformed events via simulator chaos mode
   - Assert: all appear in dead_letter_events table
   - Assert: valid events unaffected
 
-- [ ] **Test 4: Redis Unavailability**
+- [x] **Test 4: Redis Unavailability**
   - Pause Redis container
   - Assert: workers continue processing (degraded mode)
   - Unpause Redis
   - Assert: counters resume updating
 
 #### 5.4 Benchmark Suite
-- [ ] `BenchmarkRunner`:
+- [x] `BenchmarkRunner`:
   - Start simulator at target rate
   - Collect Prometheus metrics for duration
   - Generate results (throughput, latency percentiles, lag, resource usage)
 
-- [ ] **Run 1**: 1,000 events/sec, 5 minutes — baseline
-- [ ] **Run 2**: 3,000 events/sec, 5 minutes — moderate
-- [ ] **Run 3**: 5,000 events/sec, 5 minutes — target
+- [x] **Run 1**: 1,000 events/sec, 5 minutes — baseline
+- [x] **Run 2**: 3,000 events/sec, 5 minutes — moderate
+- [x] **Run 3**: 5,000 events/sec, 5 minutes — target
 
-- [ ] Generate `benchmarks/results/report.md`:
+- [x] Generate `benchmarks/results/report.md`:
   - System specs (CPU, RAM, Docker resource limits)
   - Methodology
   - Results table per run
@@ -431,21 +431,21 @@ Portfolio-ready: clean code, great README, optional blog post.
 ### Activities
 
 #### 6.1 Code Quality
-- [ ] Linting (ruff) and formatting (black)
-- [ ] Type hints on all public APIs
-- [ ] Docstrings on classes and public methods
-- [ ] Remove debug code and TODOs
-- [ ] Ensure no secrets committed (`.env.example` only)
+- [x] Linting (ruff) and formatting (black)
+- [x] Type hints on all public APIs
+- [x] Docstrings on classes and public methods
+- [x] Remove debug code and TODOs
+- [x] Ensure no secrets committed (`.env.example` only)
 
 #### 6.2 Testing
-- [ ] Unit test coverage > 70% on core modules
-- [ ] Integration tests documented in README
-- [ ] Chaos tests documented in README
+- [x] Unit test coverage > 70% on core modules
+- [x] Integration tests documented in README
+- [x] Chaos tests documented in README
 
 #### 6.3 README.md
-- [ ] Project overview (1 paragraph)
-- [ ] Architecture diagram (text-based, from tech spec)
-- [ ] Quick start:
+- [x] Project overview (1 paragraph)
+- [x] Architecture diagram (text-based, from tech spec)
+- [x] Quick start:
   ```bash
   git clone ... && cd pulsestream
   cp .env.example .env
@@ -453,18 +453,18 @@ Portfolio-ready: clean code, great README, optional blog post.
   # Open http://localhost:8000 (dashboard)
   # Open http://localhost:3000 (grafana)
   ```
-- [ ] Feature list (what it does, link to relevant code)
-- [ ] Benchmark results summary
-- [ ] Chaos test results summary
-- [ ] Technology decisions (why Kafka KRaft, why Avro, why HyperLogLog)
-- [ ] Screenshots (dashboard + Grafana)
+- [x] Feature list (what it does, link to relevant code)
+- [x] Benchmark results summary
+- [x] Chaos test results summary
+- [x] Technology decisions (why Kafka KRaft, why Avro, why HyperLogLog)
+- [x] Screenshots (dashboard + Grafana)
 
 #### 6.4 Architecture Documentation
-- [ ] `docs/architecture.md` with Mermaid diagrams:
+- [x] `docs/architecture.md` with Mermaid diagrams:
   - Data flow
   - Failure handling
   - Consumer group topology
-- [ ] 3-4 ADRs (Architecture Decision Records):
+- [x] 3-4 ADRs (Architecture Decision Records):
   - Why single Kafka broker (KRaft)
   - Why manual commits + idempotent processing
   - Why merge storage into aggregation worker

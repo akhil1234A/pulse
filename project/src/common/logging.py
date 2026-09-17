@@ -1,8 +1,8 @@
 """Structured JSON logging with correlation ID support using contextvars."""
 
-from contextvars import ContextVar
 import logging
 import sys
+from contextvars import ContextVar
 from typing import Any, Dict, Optional
 
 try:
@@ -52,9 +52,7 @@ def setup_logging(log_level: str = "INFO") -> None:
         root_logger.removeHandler(handler)
 
     handler = logging.StreamHandler(sys.stdout)
-    formatter = PulseStreamJsonFormatter(
-        "%(timestamp)s %(level)s %(logger)s %(message)s"
-    )
+    formatter = PulseStreamJsonFormatter("%(timestamp)s %(level)s %(logger)s %(message)s")
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
 

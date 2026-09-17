@@ -1,12 +1,12 @@
 """FastAPI application entry point for PulseStream API & Dashboard."""
 
 import asyncio
+import time
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
-import os
 from pathlib import Path
-import time
 from typing import AsyncGenerator, Deque, Dict
+
 from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -17,7 +17,8 @@ from src.api.routes.anomalies import router as anomalies_router
 from src.api.routes.events import router as events_router
 from src.api.routes.health import router as health_router
 from src.api.routes.metrics import router as metrics_router
-from src.api.websocket import dashboard_broadcast_task, router as websocket_router
+from src.api.websocket import dashboard_broadcast_task
+from src.api.websocket import router as websocket_router
 from src.common.config import get_settings
 from src.common.db import close_db_pool, create_db_pool
 from src.common.logging import get_logger, setup_logging
@@ -70,7 +71,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # 2. Initialize PostgreSQL Pool
     try:
         app.state.db_pool = await create_db_pool(min_size=2, max_size=10)
-        logger.info("Connected to PostgreSQL at %s:%d", settings.postgres_host, settings.postgres_port)
+        logger.info(
+            "Connected to PostgreSQL at %s:%d", settings.postgres_host, settings.postgres_port
+        )
     except Exception as e:
         logger.warning("Could not connect to PostgreSQL at startup: %s", e)
         app.state.db_pool = None
@@ -148,7 +151,9 @@ async def rate_limit_and_metrics_middleware(request: Request, call_next):
     # Record Prometheus metrics for API requests
     try:
         endpoint = request.scope.get("route").path if request.scope.get("route") else path
-        API_REQUEST_LATENCY_SECONDS.labels(method=request.method, endpoint=endpoint).observe(duration)
+        API_REQUEST_LATENCY_SECONDS.labels(method=request.method, endpoint=endpoint).observe(
+            duration
+        )
     except Exception:
         pass
 

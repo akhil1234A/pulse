@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 from typing import Optional
+
 from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -74,9 +75,7 @@ class Settings(BaseSettings):
     ingestion_simulator_mode: str = Field(
         default="steady", validation_alias="INGESTION_SIMULATOR_MODE"
     )
-    ingestion_simulator_rate: int = Field(
-        default=50, validation_alias="INGESTION_SIMULATOR_RATE"
-    )
+    ingestion_simulator_rate: int = Field(default=50, validation_alias="INGESTION_SIMULATOR_RATE")
     ingestion_chaos_duplicate_pct: float = Field(
         default=0.05, validation_alias="INGESTION_CHAOS_DUPLICATE_PCT"
     )
@@ -85,21 +84,15 @@ class Settings(BaseSettings):
     )
 
     # Worker Settings
-    worker_batch_flush_size: int = Field(
-        default=1000, validation_alias="WORKER_BATCH_FLUSH_SIZE"
-    )
+    worker_batch_flush_size: int = Field(default=1000, validation_alias="WORKER_BATCH_FLUSH_SIZE")
     worker_batch_flush_interval_seconds: float = Field(
         default=5.0, validation_alias="WORKER_BATCH_FLUSH_INTERVAL_SECONDS"
     )
     worker_poll_timeout_seconds: float = Field(
         default=1.0, validation_alias="WORKER_POLL_TIMEOUT_SECONDS"
     )
-    worker_max_batch_size: int = Field(
-        default=500, validation_alias="WORKER_MAX_BATCH_SIZE"
-    )
-    worker_health_port: int = Field(
-        default=9101, validation_alias="WORKER_HEALTH_PORT"
-    )
+    worker_max_batch_size: int = Field(default=500, validation_alias="WORKER_MAX_BATCH_SIZE")
+    worker_health_port: int = Field(default=9101, validation_alias="WORKER_HEALTH_PORT")
 
     @computed_field
     @property

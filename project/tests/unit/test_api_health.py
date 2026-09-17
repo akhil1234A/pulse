@@ -1,8 +1,10 @@
 """Unit tests for Health Check endpoint."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
+
 import httpx
 import pytest
+
 from src.api.main import app
 
 
@@ -19,8 +21,13 @@ async def test_health_all_ok():
     app.state.redis_client = mock_redis
     app.state.db_pool = mock_db
 
-    with patch("confluent_kafka.admin.AdminClient.list_topics", return_value=MagicMock(topics={"pulsestream.events": None})):
-        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+    with patch(
+        "confluent_kafka.admin.AdminClient.list_topics",
+        return_value=MagicMock(topics={"pulsestream.events": None}),
+    ):
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test"
+        ) as client:
             resp = await client.get("/api/v1/health")
             assert resp.status_code == 200
             data = resp.json()
@@ -44,7 +51,9 @@ async def test_health_degraded_when_redis_down():
     app.state.db_pool = mock_db
 
     with patch("confluent_kafka.admin.AdminClient.list_topics", return_value=MagicMock(topics={})):
-        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test"
+        ) as client:
             resp = await client.get("/api/v1/health")
             assert resp.status_code == 503
             data = resp.json()

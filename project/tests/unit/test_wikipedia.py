@@ -2,6 +2,7 @@
 
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 
 from src.common.models import EventSource, EventType
@@ -57,9 +58,18 @@ def test_wikipedia_namespace_filtering():
 def test_wikipedia_action_types():
     connector = WikipediaConnector()
 
-    assert connector.normalize_raw_event({"namespace": 0, "type": "new"})["event_type"] == EventType.POST_CREATED.value
-    assert connector.normalize_raw_event({"namespace": 0, "type": "log"})["event_type"] == EventType.USER_JOINED.value
-    assert connector.normalize_raw_event({"namespace": 0, "type": "categorize"})["event_type"] == EventType.REACTION_ADDED.value
+    assert (
+        connector.normalize_raw_event({"namespace": 0, "type": "new"})["event_type"]
+        == EventType.POST_CREATED.value
+    )
+    assert (
+        connector.normalize_raw_event({"namespace": 0, "type": "log"})["event_type"]
+        == EventType.USER_JOINED.value
+    )
+    assert (
+        connector.normalize_raw_event({"namespace": 0, "type": "categorize"})["event_type"]
+        == EventType.REACTION_ADDED.value
+    )
     assert connector.normalize_raw_event({"namespace": 0, "type": "unknown_action"}) is None
 
 

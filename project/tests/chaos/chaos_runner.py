@@ -4,13 +4,12 @@ Manages Docker container states (pause, unpause, kill, restart) and injects
 real-world faults (duplicate event floods, malformed/corrupt payloads, service outages).
 """
 
-import asyncio
 import json
 import logging
 import subprocess
 import time
-from typing import Any, Dict, List, Optional
 import uuid
+from typing import List, Optional
 
 import asyncpg
 import redis.asyncio as aioredis
@@ -163,11 +162,13 @@ class ChaosRunner:
             if i % 2 == 0:
                 payload = b"\x00\xff\xfeINVALID_AVRO_BYTES_HEADER" + err_id.encode("utf-8")
             else:
-                payload = json.dumps({
-                    "corrupt_id": err_id,
-                    "bad_field": 12345,
-                    "missing": "everything_required",
-                }).encode("utf-8")
+                payload = json.dumps(
+                    {
+                        "corrupt_id": err_id,
+                        "bad_field": 12345,
+                        "missing": "everything_required",
+                    }
+                ).encode("utf-8")
 
             producer.produce(
                 topic=self.settings.kafka_events_topic,

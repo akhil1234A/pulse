@@ -1,10 +1,10 @@
 """Pluggable anomaly detection rules for PulseStream."""
 
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-import json
-import time
 from typing import Any, Dict, List, Optional
+
 import redis.asyncio as aioredis
 
 from src.common.logging import get_logger
@@ -77,7 +77,8 @@ class UserFloodRule(BaseAnomalyRule):
                     severity="HIGH",
                     description=(
                         f"User {event.user_id} triggered flood alert: "
-                        f"{event_count} events in last {self.window_seconds}s (limit {self.threshold})"
+                        f"{event_count} events in last {self.window_seconds}s "
+                        f"(limit {self.threshold})"
                     ),
                     details={
                         "user_id": event.user_id,
@@ -138,8 +139,9 @@ class CommunitySpikeRule(BaseAnomalyRule):
                         anomaly_type="COMMUNITY_SPIKE",
                         severity="MEDIUM",
                         description=(
-                            f"Community {event.community_id} activity spike: {count_1min} events/min, "
-                            f"exceeding {self.multiplier_threshold}x rolling average ({avg_per_minute:.1f}/min)"
+                            f"Community {event.community_id} activity spike: "
+                            f"{count_1min} events/min, exceeding {self.multiplier_threshold}x "
+                            f"rolling average ({avg_per_minute:.1f}/min)"
                         ),
                         details={
                             "community_id": event.community_id,

@@ -2,8 +2,10 @@
 
 import json
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
+
 from fastapi import APIRouter, Query, Request
+
 from src.common.models import EventSource, EventType
 from src.common.redis_utils import (
     active_users_key,
@@ -114,11 +116,13 @@ async def get_trending_communities(
 
     trending = []
     for rank, (comm_id, score) in enumerate(items, start=1):
-        trending.append({
-            "rank": rank,
-            "community_id": comm_id,
-            "score": int(score),
-        })
+        trending.append(
+            {
+                "rank": rank,
+                "community_id": comm_id,
+                "score": int(score),
+            }
+        )
 
     # Cache for 30 seconds as specified in Technical Spec
     await redis_client.setex(cache_key, 30, json.dumps(trending))

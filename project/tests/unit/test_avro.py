@@ -1,6 +1,5 @@
 """Unit tests for Avro schema and serialization utilities."""
 
-import pytest
 from src.common.models import EventSource, EventType, PulseStreamEvent
 from src.common.schemas.avro import (
     deserialize_event,

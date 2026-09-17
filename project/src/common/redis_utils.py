@@ -1,8 +1,10 @@
 """Redis utility clients, key schemas, and deduplication operations."""
 
-from typing import Optional, Union
+from typing import Optional
+
 import redis
 import redis.asyncio as aioredis
+
 from src.common.config import get_settings
 
 

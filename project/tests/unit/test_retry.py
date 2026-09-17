@@ -1,8 +1,9 @@
 """Unit tests for retry logic and circuit breaker."""
 
-import asyncio
 import time
+
 import pytest
+
 from src.common.retry import (
     CircuitBreaker,
     CircuitBreakerOpenException,
@@ -67,8 +68,10 @@ def test_circuit_breaker_half_open_failure_reopens():
 
     # Failure in HALF_OPEN returns to OPEN immediately
     with pytest.raises(ValueError):
+
         def failing_call():
             raise ValueError("boom")
+
         cb.call_sync(failing_call)
 
     assert cb.state == CircuitState.OPEN

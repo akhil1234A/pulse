@@ -1,6 +1,7 @@
 """Unit tests for AnomalyDetectionWorker."""
 
 from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 
 from src.common.models import EventSource, EventType, PulseStreamEvent
