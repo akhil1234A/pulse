@@ -57,6 +57,26 @@ def recent_anomalies_key() -> str:
     return "ps:anomalies:recent"
 
 
+def cross_source_alerts_key() -> str:
+    return "ps:intelligence:alerts"
+
+
+def cross_source_channel_key() -> str:
+    return "ps:channel:cross_source"
+
+
+def hot_topics_key() -> str:
+    return "ps:intelligence:hot_topics"
+
+
+def topic_source_key(source: str, topic: str) -> str:
+    return f"ps:topic:{source.lower()}:{topic.lower()}"
+
+
+def cross_source_alert_dedup_key(topic: str) -> str:
+    return f"ps:alert:cross_source:{topic.lower()}"
+
+
 def cache_key(endpoint_hash: str) -> str:
     return f"ps:cache:{endpoint_hash}"
 

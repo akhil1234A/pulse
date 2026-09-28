@@ -16,7 +16,7 @@ async def test_realtime_metrics():
     mock_redis.setex = AsyncMock()
 
     mock_pipe = MagicMock()
-    # pipeline returns: total_today, active_users, count_5s, 4 types, 2 sources
+    # pipeline returns: total_today, active_users, count_5s, 4 types, 5 sources
     mock_pipe.execute = AsyncMock(
         return_value=[
             1250,  # total_today
@@ -27,7 +27,10 @@ async def test_realtime_metrics():
             30,
             20,  # types
             80,
-            120,  # sources
+            120,
+            45,
+            60,
+            35,  # sources (WIKIPEDIA, SIMULATOR, HACKERNEWS, GITHUB, REDDIT)
         ]
     )
     mock_redis.pipeline.return_value = mock_pipe
@@ -45,6 +48,9 @@ async def test_realtime_metrics():
         assert data["active_users"] == 340
         assert "POST_CREATED" in data["events_by_type"]
         assert "WIKIPEDIA" in data["events_by_source"]
+        assert "HACKERNEWS" in data["events_by_source"]
+        assert "GITHUB" in data["events_by_source"]
+        assert "REDDIT" in data["events_by_source"]
 
 
 @pytest.mark.asyncio

@@ -72,8 +72,15 @@ async def get_realtime_metrics(request: Request) -> Dict[str, Any]:
 
     events_by_source = {}
     for src in sources:
-        events_by_source[src] = int(results[offset] or 0)
-        offset += 1
+        if offset < len(results):
+            val = results[offset]
+            offset += 1
+            try:
+                events_by_source[src] = int(val or 0) if not isinstance(val, (list, dict)) else 0
+            except (ValueError, TypeError):
+                events_by_source[src] = 0
+        else:
+            events_by_source[src] = 0
 
     response_data = {
         "events_per_second": eps,

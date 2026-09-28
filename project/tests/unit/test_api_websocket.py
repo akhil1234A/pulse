@@ -65,10 +65,15 @@ async def test_build_dashboard_payload():
             2,
             1,  # types
             12,
-            6,  # sources
+            6,
+            8,
+            15,
+            7,  # sources (WIKIPEDIA, SIMULATOR, HACKERNEWS, GITHUB, REDDIT)
             [("tech", 40.0)],  # trending
             ['{"event_id": "e1", "event_type": "POST_CREATED"}'],  # recent events
             ['{"anomaly_type": "SPIKE", "severity": "WARNING"}'],  # recent anomalies
+            ['{"topic": "OpenAI", "wikipedia_count": 5, "hackernews_count": 3}'],  # cross source alerts
+            [("OpenAI", 8.0)],  # hot topics
         ]
     )
     mock_redis.pipeline.return_value = mock_pipe
@@ -82,3 +87,7 @@ async def test_build_dashboard_payload():
     assert payload["trending"][0]["community_id"] == "tech"
     assert len(payload["recent_events"]) == 1
     assert len(payload["recent_anomalies"]) == 1
+    assert len(payload["cross_source_alerts"]) == 1
+    assert payload["cross_source_alerts"][0]["topic"] == "OpenAI"
+    assert len(payload["hot_topics"]) == 1
+    assert payload["hot_topics"][0]["topic"] == "OpenAI"

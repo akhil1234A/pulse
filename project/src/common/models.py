@@ -21,6 +21,10 @@ class EventType(str, Enum):
 class EventSource(str, Enum):
     WIKIPEDIA = "WIKIPEDIA"
     SIMULATOR = "SIMULATOR"
+    HACKERNEWS = "HACKERNEWS"
+    GITHUB = "GITHUB"
+    REDDIT = "REDDIT"
+    DEVTO = "DEVTO"
 
 
 def current_time_millis() -> int:

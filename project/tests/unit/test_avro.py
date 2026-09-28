@@ -61,6 +61,22 @@ def test_model_avro_bytes_roundtrip():
     assert restored.community_id is None
 
 
+def test_avro_hackernews_roundtrip():
+    hn_event = PulseStreamEvent(
+        event_type=EventType.POST_CREATED,
+        source=EventSource.HACKERNEWS,
+        user_id="dang",
+        community_id="news.ycombinator.com",
+        payload={"title": "Announcing PulseStream", "score": 250},
+    )
+
+    data = hn_event.to_avro_bytes()
+    restored = PulseStreamEvent.from_avro_bytes(data)
+    assert restored.source == EventSource.HACKERNEWS
+    assert restored.user_id == "dang"
+    assert restored.community_id == "news.ycombinator.com"
+
+
 def test_invalid_avro_validation():
     # Missing required fields
     invalid_dict = {

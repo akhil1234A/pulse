@@ -16,6 +16,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from src.api.routes.anomalies import router as anomalies_router
 from src.api.routes.events import router as events_router
 from src.api.routes.health import router as health_router
+from src.api.routes.intelligence import router as intelligence_router
 from src.api.routes.metrics import router as metrics_router
 from src.api.websocket import dashboard_broadcast_task
 from src.api.websocket import router as websocket_router
@@ -165,6 +166,7 @@ app.include_router(health_router)
 app.include_router(metrics_router)
 app.include_router(events_router)
 app.include_router(anomalies_router)
+app.include_router(intelligence_router)
 app.include_router(websocket_router)
 
 

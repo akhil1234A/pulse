@@ -24,6 +24,7 @@ from src.common.redis_utils import (
     type_count_key,
 )
 from src.workers.base import BaseWorker
+from src.workers.intelligence.cross_source import CrossSourceIntelligenceDetector
 
 logger = get_logger(__name__)
 
@@ -49,6 +50,7 @@ class AggregationWorker(BaseWorker):
         self._pg_buffer: List[PulseStreamEvent] = []
         self._last_flush_time: float = time.monotonic()
         self._flush_lock = asyncio.Lock()
+        self.intelligence_detector = CrossSourceIntelligenceDetector()
 
     async def _update_redis_aggregates(self, events: List[PulseStreamEvent]) -> None:
         """Executes batched Redis operations via pipeline."""
@@ -180,10 +182,23 @@ class AggregationWorker(BaseWorker):
         # 1. Update Redis aggregates in bulk
         await self._update_redis_aggregates(new_events)
 
-        # 2. Append to PostgreSQL buffer
+        # 2. Check for cross-source correlation signals (Wikipedia + Hacker News)
+        for ev in new_events:
+            try:
+                await self.intelligence_detector.evaluate_event(
+                    ev,
+                    redis_client=self._redis_client,
+                    db_pool=self._db_pool,
+                    pg_circuit=self.pg_circuit,
+                    redis_circuit=self.redis_circuit,
+                )
+            except Exception as e:
+                logger.debug("Cross-source evaluation failed for event %s: %s", ev.event_id, e)
+
+        # 3. Append to PostgreSQL buffer
         self._pg_buffer.extend(new_events)
 
-        # 3. Flush to PostgreSQL before committing Kafka offsets
+        # 4. Flush to PostgreSQL before committing Kafka offsets
         await self.flush_pg_buffer(force=True)
 
     async def shutdown(self) -> None:

@@ -37,10 +37,21 @@
     badgeAnomaliesCount: document.getElementById('badge-anomalies-count'),
     // Ticker
     tickerWikiVal: document.getElementById('ticker-wiki-val'),
+    tickerHnVal: document.getElementById('ticker-hn-val'),
+    tickerGhVal: document.getElementById('ticker-gh-val'),
+    tickerRedditVal: document.getElementById('ticker-reddit-val'),
+    tickerDevtoVal: document.getElementById('ticker-devto-val'),
     tickerSimVal: document.getElementById('ticker-sim-val'),
+    // Executive Intelligence Hub
+    hubExecutiveInsight: document.getElementById('hub-executive-insight'),
+    hubQuickTags: document.getElementById('hub-quick-tags'),
+    dossierSearchInput: document.getElementById('dossier-search-input'),
+    dossierSearchBtn: document.getElementById('dossier-search-btn'),
     // Streams & Lists
     eventFeed: document.getElementById('event-feed'),
     feedEmptyState: document.getElementById('feed-empty-state'),
+    intelligenceList: document.getElementById('intelligence-list'),
+    hotTopicsList: document.getElementById('hot-topics-list'),
     trendingList: document.getElementById('trending-list'),
     anomaliesList: document.getElementById('anomalies-list'),
     // Controls
@@ -58,11 +69,27 @@
     distBarComment: document.getElementById('dist-bar-comment'),
     distBarReaction: document.getElementById('dist-bar-reaction'),
     distBarJoined: document.getElementById('dist-bar-joined'),
-    // Modal
+    // Event Inspection Modal
     modal: document.getElementById('event-modal'),
     modalCloseBtn: document.getElementById('modal-close-btn'),
     modalJson: document.getElementById('modal-json'),
     modalTitle: document.getElementById('modal-title'),
+    // Topic Dossier Modal
+    dossierModal: document.getElementById('dossier-modal'),
+    dossierCloseBtn: document.getElementById('dossier-close-btn'),
+    dossierTitle: document.getElementById('dossier-title'),
+    dossierStatus: document.getElementById('dossier-status'),
+    dossierAssessment: document.getElementById('dossier-assessment'),
+    dossierTotalActivity: document.getElementById('dossier-total-activity'),
+    dossierActivePlatforms: document.getElementById('dossier-active-platforms'),
+    dossierCommunitiesCount: document.getElementById('dossier-communities-count'),
+    dossierCntWiki: document.getElementById('dossier-cnt-wiki'),
+    dossierCntHn: document.getElementById('dossier-cnt-hn'),
+    dossierCntGh: document.getElementById('dossier-cnt-gh'),
+    dossierCntReddit: document.getElementById('dossier-cnt-reddit'),
+    dossierCntDevto: document.getElementById('dossier-cnt-devto'),
+    dossierCommPills: document.getElementById('dossier-comm-pills'),
+    dossierEventsList: document.getElementById('dossier-events-list'),
   };
 
   // Smooth number rolling animation
@@ -203,9 +230,17 @@
     // 4. Update Source Tickers
     const bySource = metrics.events_by_source || {};
     const wikiVal = bySource['WIKIPEDIA'] || 0;
+    const hnVal = bySource['HACKERNEWS'] || 0;
+    const ghVal = bySource['GITHUB'] || 0;
+    const redditVal = bySource['REDDIT'] || 0;
+    const devtoVal = bySource['DEVTO'] || 0;
     const simVal = bySource['SIMULATOR'] || 0;
-    els.tickerWikiVal.textContent = wikiVal.toLocaleString();
-    els.tickerSimVal.textContent = simVal.toLocaleString();
+    if (els.tickerWikiVal) els.tickerWikiVal.textContent = wikiVal.toLocaleString();
+    if (els.tickerHnVal) els.tickerHnVal.textContent = hnVal.toLocaleString();
+    if (els.tickerGhVal) els.tickerGhVal.textContent = ghVal.toLocaleString();
+    if (els.tickerRedditVal) els.tickerRedditVal.textContent = redditVal.toLocaleString();
+    if (els.tickerDevtoVal) els.tickerDevtoVal.textContent = devtoVal.toLocaleString();
+    if (els.tickerSimVal) els.tickerSimVal.textContent = simVal.toLocaleString();
 
     // 5. Update Type Distribution Bars
     const byType = metrics.events_by_type || {};
@@ -225,15 +260,88 @@
     els.distBarReaction.style.width = `${Math.min(100, Math.round((reactionCount / sumTypes) * 100))}%`;
     els.distBarJoined.style.width = `${Math.min(100, Math.round((joinedCount / sumTypes) * 100))}%`;
 
-    // 6. Update Trending Communities
+    // 6. Update Cross-Source Radar & Hot Topics
+    renderIntelligence(data.cross_source_alerts || []);
+    renderHotTopics(data.hot_topics || []);
+
+    // 7. Update Trending Communities
     renderTrending(data.trending || []);
 
-    // 7. Update Recent Anomalies
+    // 8. Update Recent Anomalies
     renderAnomalies(data.recent_anomalies || []);
 
-    // 8. Update Live Event Feed
+    // 9. Update Live Event Feed
     if (!state.isPaused) {
       renderRecentEvents(data.recent_events || []);
+    }
+  }
+
+  // Render Cross-Source Radar Surges
+  function renderIntelligence(alerts) {
+    if (!els.intelligenceList) return;
+    if (!alerts || alerts.length === 0) {
+      els.intelligenceList.innerHTML = '<div class="empty-list-placeholder">Correlating Wikipedia, Hacker News, GitHub & Reddit...</div>';
+      return;
+    }
+
+    els.intelligenceList.innerHTML = alerts
+      .map(
+        (a) => {
+          const badgeParts = [];
+          if (a.wikipedia_count > 0) badgeParts.push(`<span class="badge-wiki-count">Wiki: ${a.wikipedia_count}</span>`);
+          if (a.hackernews_count > 0) badgeParts.push(`<span class="badge-hn-count">HN: ${a.hackernews_count}</span>`);
+          if (a.github_count > 0) badgeParts.push(`<span class="badge-wiki-count" style="color:#34d399">GH: ${a.github_count}</span>`);
+          if (a.reddit_count > 0) badgeParts.push(`<span class="badge-hn-count" style="color:#f87171">Reddit: ${a.reddit_count}</span>`);
+          if (a.devto_count > 0) badgeParts.push(`<span class="badge-hn-count" style="color:#a5b4fc">Dev.to: ${a.devto_count}</span>`);
+
+          return `
+        <div class="intelligence-item" style="cursor: pointer" onclick="window.pulseOpenDossier && window.pulseOpenDossier('${escapeHtml(a.topic || '')}')">
+          <div class="intelligence-top">
+            <span class="intelligence-topic">
+              <span>🔥</span>
+              <span>${escapeHtml(a.topic || 'Surge Detected')}</span>
+            </span>
+            <div class="intelligence-badges">
+              ${badgeParts.join('')}
+            </div>
+          </div>
+          <p class="intelligence-desc">${escapeHtml(a.description || 'Simultaneous cross-platform activity surge')}</p>
+        </div>
+      `;
+        }
+      )
+      .join('');
+  }
+
+  // Render Hot Topics
+  function renderHotTopics(hotTopics) {
+    if (!els.hotTopicsList) return;
+    if (!hotTopics || hotTopics.length === 0) {
+      els.hotTopicsList.innerHTML = '<div class="empty-list-placeholder">Tracking topic momentum...</div>';
+      return;
+    }
+
+    els.hotTopicsList.innerHTML = hotTopics
+      .map(
+        (item) => `
+        <div class="hot-topic-item" style="cursor: pointer" onclick="window.pulseOpenDossier && window.pulseOpenDossier('${escapeHtml(item.topic)}')">
+          <div class="hot-topic-left">
+            <span class="hot-topic-rank">#${item.rank}</span>
+            <span class="hot-topic-name">${escapeHtml(item.topic)}</span>
+          </div>
+          <span class="hot-topic-score">${item.score.toLocaleString()} pts</span>
+        </div>
+      `
+      )
+      .join('');
+
+    // Also update quick tags in Executive Hub if available
+    if (els.hubQuickTags && hotTopics.length > 0) {
+      const topPills = hotTopics.slice(0, 5).map(
+        (t) => `<span class="quick-topic-pill" data-topic="${escapeHtml(t.topic)}">${escapeHtml(t.topic)}</span>`
+      ).join('');
+      els.hubQuickTags.innerHTML = `<span class="quick-label">Trending Now:</span> ${topPills}`;
+      attachQuickTagListeners();
     }
   }
 
@@ -356,9 +464,25 @@
       item.onclick = () => openInspectionModal(ev);
 
       let payloadSummary = '';
+      let extraBadges = '';
       try {
         const p = typeof ev.payload === 'string' ? JSON.parse(ev.payload) : ev.payload;
-        if (p.title) payloadSummary = `Title: ${p.title}`;
+        if (ev.source === 'HACKERNEWS' && p.score !== undefined && p.score !== null) {
+          extraBadges += `<span class="badge-hn-score">▲ ${p.score}</span>`;
+        } else if (ev.source === 'GITHUB' && p.gh_type) {
+          extraBadges += `<span class="badge-gh-action">${escapeHtml(p.gh_type)}</span>`;
+        } else if (ev.source === 'REDDIT' && p.score !== undefined && p.score !== null) {
+          extraBadges += `<span class="badge-reddit-score">▲ ${p.score}</span>`;
+        } else if (ev.source === 'DEVTO') {
+          if (p.reactions) {
+            extraBadges += `<span class="badge-hn-score" style="background:rgba(99,102,241,0.2);color:#a5b4fc">♥ ${p.reactions}</span>`;
+          }
+          if (p.reading_time_minutes) {
+            extraBadges += `<span class="badge-hn-score" style="background:rgba(255,255,255,0.06);color:#94a3b8">${p.reading_time_minutes}m</span>`;
+          }
+        }
+
+        if (p.title) payloadSummary = p.title;
         else if (p.comment) payloadSummary = `Comment: ${p.comment}`;
         else if (p.text) payloadSummary = p.text;
         else payloadSummary = JSON.stringify(p);
@@ -366,11 +490,19 @@
         payloadSummary = String(ev.payload);
       }
 
+      let sourceClass = '';
+      if (ev.source === 'HACKERNEWS') sourceClass = 'badge-source-hn';
+      else if (ev.source === 'WIKIPEDIA') sourceClass = 'badge-source-wiki';
+      else if (ev.source === 'GITHUB') sourceClass = 'badge-source-gh';
+      else if (ev.source === 'REDDIT') sourceClass = 'badge-source-reddit';
+      else if (ev.source === 'DEVTO') sourceClass = 'badge-source-devto';
+
       item.innerHTML = `
         <div class="event-item-top">
           <div class="event-badges">
             <span class="badge-type badge-${ev.event_type}">${ev.event_type}</span>
-            <span class="badge-source">${ev.source}</span>
+            <span class="badge-source ${sourceClass}">${ev.source}</span>
+            ${extraBadges}
           </div>
           <span class="event-time">${formatTime(ev.timestamp)}</span>
         </div>
@@ -394,6 +526,112 @@
 
   function closeModal() {
     els.modal.classList.remove('active');
+  }
+
+  // Topic Dossier Modal
+  async function openTopicDossier(topic) {
+    if (!topic || !topic.trim()) return;
+    const cleanTopic = topic.trim();
+
+    if (els.dossierTitle) els.dossierTitle.textContent = `Topic Dossier: ${cleanTopic}`;
+    if (els.dossierStatus) {
+      els.dossierStatus.textContent = 'FETCHING...';
+      els.dossierStatus.className = 'dossier-status-pill status-ACTIVE';
+    }
+    if (els.dossierAssessment) els.dossierAssessment.textContent = `Analyzing multi-platform intelligence for '${cleanTopic}'...`;
+    if (els.dossierModal) els.dossierModal.classList.add('active');
+
+    try {
+      const res = await fetch(`/api/v1/intelligence/topic/${encodeURIComponent(cleanTopic)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      if (els.dossierTitle) els.dossierTitle.textContent = `${data.topic} Dossier`;
+      if (els.dossierStatus) {
+        els.dossierStatus.textContent = data.status || 'ACTIVE';
+        els.dossierStatus.className = `dossier-status-pill status-${data.status || 'ACTIVE'}`;
+      }
+      if (els.dossierAssessment) els.dossierAssessment.textContent = data.assessment || 'No activity summary.';
+      if (els.dossierTotalActivity) els.dossierTotalActivity.textContent = (data.total_activity || 0).toLocaleString();
+      if (els.dossierActivePlatforms) els.dossierActivePlatforms.textContent = data.active_platforms || 0;
+      if (els.dossierCommunitiesCount) els.dossierCommunitiesCount.textContent = (data.communities || []).length;
+
+      const sources = data.sources || {};
+      if (els.dossierCntWiki) els.dossierCntWiki.textContent = sources.WIKIPEDIA || 0;
+      if (els.dossierCntHn) els.dossierCntHn.textContent = sources.HACKERNEWS || 0;
+      if (els.dossierCntGh) els.dossierCntGh.textContent = sources.GITHUB || 0;
+      if (els.dossierCntReddit) els.dossierCntReddit.textContent = sources.REDDIT || 0;
+      if (els.dossierCntDevto) els.dossierCntDevto.textContent = sources.DEVTO || 0;
+
+      // Communities
+      if (els.dossierCommPills) {
+        const comms = data.communities || [];
+        if (comms.length > 0) {
+          els.dossierCommPills.innerHTML = comms
+            .map((c) => `<span class="dossier-comm-pill">${escapeHtml(c)}</span>`)
+            .join('');
+        } else {
+          els.dossierCommPills.innerHTML = '<span class="empty-list-placeholder">No specific communities recorded</span>';
+        }
+      }
+
+      // Recent events
+      if (els.dossierEventsList) {
+        const events = data.recent_events || [];
+        if (events.length > 0) {
+          els.dossierEventsList.innerHTML = events
+            .map(
+              (ev) => `
+            <div class="dossier-event-row">
+              <div class="dossier-event-header">
+                <span class="badge-source badge-source-${ev.source.toLowerCase().replace('hackernews','hn').replace('wikipedia','wiki')}">${escapeHtml(ev.source)}</span>
+                <span class="event-time">${formatTime(ev.timestamp)}</span>
+              </div>
+              <div class="dossier-event-title">${escapeHtml(ev.title || ev.community_id || 'Event')}</div>
+            </div>
+          `
+            )
+            .join('');
+        } else {
+          els.dossierEventsList.innerHTML = '<div class="empty-list-placeholder">No recent event samples for this topic</div>';
+        }
+      }
+    } catch (err) {
+      if (els.dossierAssessment) {
+        els.dossierAssessment.textContent = `Unable to retrieve dossier for '${cleanTopic}'. (${err.message})`;
+      }
+    }
+  }
+
+  function closeDossierModal() {
+    if (els.dossierModal) els.dossierModal.classList.remove('active');
+  }
+
+  // Expose to window for inline onclick handlers
+  window.pulseOpenDossier = openTopicDossier;
+
+  // Fetch Executive Pulse Summary
+  async function fetchPulseSummary() {
+    try {
+      const res = await fetch('/api/v1/intelligence/pulse-summary');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (els.hubExecutiveInsight && data.executive_insight) {
+        els.hubExecutiveInsight.textContent = data.executive_insight;
+      }
+    } catch (e) {
+      // Nominal failover
+    }
+  }
+
+  function attachQuickTagListeners() {
+    const pills = document.querySelectorAll('.quick-topic-pill');
+    pills.forEach((p) => {
+      p.onclick = () => {
+        const topic = p.getAttribute('data-topic');
+        if (topic) openTopicDossier(topic);
+      };
+    });
   }
 
   // Utility to escape HTML
@@ -435,14 +673,41 @@
     }
   });
 
+  // Dossier search interactions
+  if (els.dossierSearchBtn && els.dossierSearchInput) {
+    els.dossierSearchBtn.addEventListener('click', () => {
+      openTopicDossier(els.dossierSearchInput.value);
+    });
+    els.dossierSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        openTopicDossier(els.dossierSearchInput.value);
+      }
+    });
+  }
+
+  if (els.dossierCloseBtn) {
+    els.dossierCloseBtn.addEventListener('click', closeDossierModal);
+  }
+  if (els.dossierModal) {
+    els.dossierModal.addEventListener('click', (e) => {
+      if (e.target === els.dossierModal) closeDossierModal();
+    });
+  }
+
   els.modalCloseBtn.addEventListener('click', closeModal);
   els.modal.addEventListener('click', (e) => {
     if (e.target === els.modal) closeModal();
   });
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Escape') {
+      closeModal();
+      closeDossierModal();
+    }
   });
 
   // Initial startup
+  attachQuickTagListeners();
+  fetchPulseSummary();
+  setInterval(fetchPulseSummary, 10000);
   connectWebSocket();
 })();

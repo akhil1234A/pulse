@@ -29,6 +29,10 @@
         <div class="event-ticker">
           <span class="ticker-label">SOURCES:</span>
           <span class="ticker-badge ticker-wiki" id="ticker-wiki">Wikipedia: <strong id="ticker-wiki-val">0</strong></span>
+          <span class="ticker-badge ticker-hn" id="ticker-hn">Hacker News: <strong id="ticker-hn-val">0</strong></span>
+          <span class="ticker-badge ticker-gh" id="ticker-gh">GitHub: <strong id="ticker-gh-val">0</strong></span>
+          <span class="ticker-badge ticker-reddit" id="ticker-reddit">Reddit: <strong id="ticker-reddit-val">0</strong></span>
+          <span class="ticker-badge ticker-devto" id="ticker-devto">Dev.to: <strong id="ticker-devto-val">0</strong></span>
           <span class="ticker-badge ticker-sim" id="ticker-sim">Simulator: <strong id="ticker-sim-val">0</strong></span>
         </div>
       </div>
@@ -110,6 +114,28 @@
         </div>
       </section>
 
+      <!-- Executive Intelligence & Knowledge Search Hub -->
+      <section class="intelligence-hub glass-card" aria-label="Executive Intelligence & Knowledge Search">
+        <div class="hub-header">
+          <div class="hub-title-group">
+            <span class="hub-badge"><span class="pulse-ring-sm"></span> PULSE BRIEFING</span>
+            <div class="hub-insight" id="hub-executive-insight">Connecting intelligence engine across Wikipedia, Hacker News, GitHub, and Reddit...</div>
+          </div>
+          <div class="hub-search-bar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="dossier-search-input" placeholder="Ask Pulse / Search Topic Dossier (e.g. OpenAI, Rust, DeepSeek)..." autocomplete="off">
+            <button id="dossier-search-btn" class="hub-search-btn">Search Dossier</button>
+          </div>
+        </div>
+        <div class="hub-quick-tags" id="hub-quick-tags">
+          <span class="quick-label">Trending Now:</span>
+          <span class="quick-topic-pill" data-topic="OpenAI">OpenAI</span>
+          <span class="quick-topic-pill" data-topic="DeepSeek">DeepSeek</span>
+          <span class="quick-topic-pill" data-topic="Rust">Rust</span>
+          <span class="quick-topic-pill" data-topic="Python">Python</span>
+        </div>
+      </section>
+
       <!-- Dashboard Multi-Column Layout -->
       <section class="dashboard-columns">
         <!-- Left Column: Live Event Stream (65% width) -->
@@ -142,6 +168,10 @@
                 <select id="event-source-filter" class="custom-select">
                   <option value="ALL">All Sources</option>
                   <option value="WIKIPEDIA">Wikipedia</option>
+                  <option value="HACKERNEWS">Hacker News</option>
+                  <option value="GITHUB">GitHub</option>
+                  <option value="REDDIT">Reddit</option>
+                  <option value="DEVTO">Dev.to</option>
                   <option value="SIMULATOR">Simulator</option>
                 </select>
 
@@ -164,6 +194,40 @@
 
         <!-- Right Column: Trending & Anomalies (35% width) -->
         <aside class="sidebar-panel">
+          <!-- Cross-Source Intelligence Radar Card -->
+          <div class="intelligence-card glass-card">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="m12 2a10 10 0 0 1 10 10"></path>
+                  <path d="M12 6a6 6 0 0 1 6 6"></path>
+                </svg>
+                <h3>Cross-Source Radar</h3>
+              </div>
+              <span class="badge-radar-pill">Wiki + HN Surges</span>
+            </div>
+            <div class="intelligence-list" id="intelligence-list">
+              <div class="empty-list-placeholder">Correlating Wikipedia & Hacker News...</div>
+            </div>
+          </div>
+
+          <!-- Hot Topics Across Platforms -->
+          <div class="hot-topics-card glass-card">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2.2">
+                  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                </svg>
+                <h3>Hot Topics</h3>
+              </div>
+              <span class="panel-sub-label">Multi-Source</span>
+            </div>
+            <div class="hot-topics-list" id="hot-topics-list">
+              <div class="empty-list-placeholder">Tracking topic momentum...</div>
+            </div>
+          </div>
+
           <!-- Trending Communities Card -->
           <div class="trending-card glass-card">
             <div class="panel-header">
@@ -231,6 +295,63 @@
         </div>
         <div class="modal-body">
           <pre><code id="modal-json" class="json-viewer"></code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Topic Dossier Modal -->
+    <div class="modal-overlay" id="dossier-modal" aria-hidden="true">
+      <div class="modal-container dossier-modal-container glass-card">
+        <div class="modal-header">
+          <div class="dossier-header-title">
+            <span class="dossier-icon">📊</span>
+            <div>
+              <h3 id="dossier-title">Topic Dossier</h3>
+              <span class="dossier-status-pill" id="dossier-status">SURGING</span>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="dossier-close-btn">&times;</button>
+        </div>
+        <div class="modal-body" id="dossier-body">
+          <div class="dossier-assessment-box" id="dossier-assessment">Loading intelligence assessment...</div>
+          
+          <div class="dossier-stats-grid">
+            <div class="dossier-stat-tile">
+              <span class="dossier-stat-num" id="dossier-total-activity">0</span>
+              <span class="dossier-stat-label">Total Mentions</span>
+            </div>
+            <div class="dossier-stat-tile">
+              <span class="dossier-stat-num" id="dossier-active-platforms">0</span>
+              <span class="dossier-stat-label">Platforms</span>
+            </div>
+            <div class="dossier-stat-tile">
+              <span class="dossier-stat-num" id="dossier-communities-count">0</span>
+              <span class="dossier-stat-label">Communities</span>
+            </div>
+          </div>
+
+          <div class="dossier-source-breakdown">
+            <h4>Cross-Platform Distribution</h4>
+            <div class="dossier-breakdown-row" id="dossier-breakdown-row">
+              <div class="breakdown-chip wiki-chip">Wikipedia: <strong id="dossier-cnt-wiki">0</strong></div>
+              <div class="breakdown-chip hn-chip">Hacker News: <strong id="dossier-cnt-hn">0</strong></div>
+              <div class="breakdown-chip gh-chip">GitHub: <strong id="dossier-cnt-gh">0</strong></div>
+              <div class="breakdown-chip reddit-chip">Reddit: <strong id="dossier-cnt-reddit">0</strong></div>
+              <div class="breakdown-chip devto-chip">Dev.to: <strong id="dossier-cnt-devto">0</strong></div>
+            </div>
+          </div>
+
+          <div class="dossier-communities-section" id="dossier-comm-section">
+            <h4>Active Communities & Repos</h4>
+            <div class="dossier-comm-pills" id="dossier-comm-pills"></div>
+          </div>
+
+          <div class="dossier-events-section">
+            <h4>Recent Cross-Platform Events</h4>
+            <div class="dossier-events-list" id="dossier-events-list">
+              <div class="empty-list-placeholder">No recent events recorded for this topic</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

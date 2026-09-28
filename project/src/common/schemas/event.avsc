@@ -20,7 +20,7 @@
       "type": {
         "type": "enum",
         "name": "EventSource",
-        "symbols": ["WIKIPEDIA", "SIMULATOR"]
+        "symbols": ["WIKIPEDIA", "SIMULATOR", "HACKERNEWS", "GITHUB", "REDDIT", "DEVTO"]
       }
     },
     {

@@ -131,7 +131,12 @@ services:
     environment:
       KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
       METRICS_PORT: 9100
-      LOG_LEVEL: "INFO"
+      INGESTION_SIMULATOR_ENABLED: "false"
+      INGESTION_DEVTO_ENABLED: "true"
+      INGESTION_DEVTO_POLL_INTERVAL: "15"
+      GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
+      REDDIT_CLIENT_ID: "${REDDIT_CLIENT_ID:-}"
+      REDDIT_CLIENT_SECRET: "${REDDIT_CLIENT_SECRET:-}"
     ports:
       - "9100:9100"
     depends_on:

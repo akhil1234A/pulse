@@ -70,7 +70,7 @@ class Settings(BaseSettings):
         validation_alias="INGESTION_WIKIPEDIA_URL",
     )
     ingestion_simulator_enabled: bool = Field(
-        default=True, validation_alias="INGESTION_SIMULATOR_ENABLED"
+        default=False, validation_alias="INGESTION_SIMULATOR_ENABLED"
     )
     ingestion_simulator_mode: str = Field(
         default="steady", validation_alias="INGESTION_SIMULATOR_MODE"
@@ -81,6 +81,38 @@ class Settings(BaseSettings):
     )
     ingestion_chaos_malformed_pct: float = Field(
         default=0.02, validation_alias="INGESTION_CHAOS_MALFORMED_PCT"
+    )
+    ingestion_hackernews_enabled: bool = Field(
+        default=True, validation_alias="INGESTION_HACKERNEWS_ENABLED"
+    )
+    ingestion_hackernews_poll_interval: int = Field(
+        default=5, validation_alias="INGESTION_HACKERNEWS_POLL_INTERVAL",
+        description="Polling interval in seconds for Hacker News Firebase API",
+    )
+    ingestion_github_enabled: bool = Field(
+        default=True, validation_alias="INGESTION_GITHUB_ENABLED"
+    )
+    ingestion_github_poll_interval: int = Field(
+        default=10, validation_alias="INGESTION_GITHUB_POLL_INTERVAL",
+        description="Polling interval in seconds for GitHub Events API",
+    )
+    ingestion_reddit_enabled: bool = Field(
+        default=True, validation_alias="INGESTION_REDDIT_ENABLED"
+    )
+    ingestion_reddit_poll_interval: int = Field(
+        default=15, validation_alias="INGESTION_REDDIT_POLL_INTERVAL",
+        description="Polling interval in seconds for Reddit JSON API",
+    )
+    ingestion_devto_enabled: bool = Field(
+        default=True, validation_alias="INGESTION_DEVTO_ENABLED"
+    )
+    ingestion_devto_poll_interval: int = Field(
+        default=15, validation_alias="INGESTION_DEVTO_POLL_INTERVAL",
+        description="Polling interval in seconds for Dev.to Articles API",
+    )
+    ingestion_devto_per_page: int = Field(
+        default=25, validation_alias="INGESTION_DEVTO_PER_PAGE",
+        description="Number of articles to fetch per poll from Dev.to",
     )
 
     # Worker Settings

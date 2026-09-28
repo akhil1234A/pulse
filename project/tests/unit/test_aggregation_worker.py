@@ -66,6 +66,20 @@ async def test_process_batch_dedup_and_buffer(sample_events):
 
 
 @pytest.mark.asyncio
+async def test_process_batch_invokes_intelligence_detector(sample_events):
+    worker = AggregationWorker()
+    worker._redis_client = AsyncMock()
+    worker._update_redis_aggregates = AsyncMock()
+    worker.flush_pg_buffer = AsyncMock()
+    worker.check_dedup = AsyncMock(return_value=False)
+    worker.intelligence_detector.evaluate_event = AsyncMock(return_value=[])
+
+    await worker.process_batch(sample_events)
+
+    assert worker.intelligence_detector.evaluate_event.call_count == len(sample_events)
+
+
+@pytest.mark.asyncio
 async def test_flush_pg_buffer_size_threshold(sample_events):
     settings = Settings(worker_batch_flush_size=2)
     worker = AggregationWorker(settings=settings)

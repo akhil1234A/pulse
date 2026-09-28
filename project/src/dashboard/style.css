@@ -165,6 +165,26 @@ body {
   color: var(--accent-cyan);
 }
 
+.ticker-hn {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.ticker-gh {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
+.ticker-reddit {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+.ticker-devto {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+}
+
 .ticker-sim {
   background: rgba(168, 85, 247, 0.1);
   color: var(--accent-purple);
@@ -603,6 +623,41 @@ body {
   color: var(--text-muted);
 }
 
+.badge-source-wiki {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-cyan);
+}
+
+.badge-source-hn {
+  background: rgba(245, 158, 11, 0.18);
+  color: #f59e0b;
+}
+
+.badge-source-gh {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+}
+
+.badge-source-reddit {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+}
+
+.badge-source-devto {
+  background: rgba(99, 102, 241, 0.18);
+  color: #a5b4fc;
+}
+
+.badge-hn-score {
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+}
+
 .event-time {
   color: var(--text-dim);
   font-size: 0.75rem;
@@ -768,6 +823,129 @@ body {
   color: var(--text-muted);
 }
 
+.badge-radar-pill {
+  font-size: 0.7rem;
+  color: var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.12);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.intelligence-list, .hot-topics-list {
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* Intelligence Radar Item */
+.intelligence-item {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(99, 102, 241, 0.08));
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.intelligence-item:hover {
+  border-color: rgba(56, 189, 248, 0.5);
+  transform: translateY(-1px);
+}
+
+.intelligence-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.intelligence-topic {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.intelligence-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+}
+
+.badge-wiki-count {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-cyan);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.badge-hn-count {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent-amber);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.intelligence-desc {
+  font-size: 0.77rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* Hot Topic Item */
+.hot-topic-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-subtle);
+  transition: var(--transition);
+}
+
+.hot-topic-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+.hot-topic-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hot-topic-rank {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--accent-rose);
+  width: 20px;
+}
+
+.hot-topic-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+
+.hot-topic-score {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent-cyan);
+}
+
 /* Distribution Bars */
 .distribution-bars {
   padding: 14px 18px;
@@ -878,4 +1056,364 @@ body {
   white-space: pre-wrap;
   word-break: break-all;
   line-height: 1.6;
+}
+
+/* ==========================================================================
+   Source Badges for GitHub & Reddit
+   ========================================================================== */
+.badge-source-gh {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-source-reddit {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-gh-action {
+  font-size: 0.65rem;
+  background: rgba(16, 185, 129, 0.12);
+  color: #6ee7b7;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+}
+
+.badge-reddit-score {
+  font-size: 0.65rem;
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+}
+
+/* ==========================================================================
+   Executive Intelligence Hub & Topic Search
+   ========================================================================== */
+.intelligence-hub {
+  padding: 16px 22px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(30, 41, 59, 0.7));
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.intelligence-hub::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-indigo), var(--accent-purple), var(--accent-rose));
+}
+
+.hub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.hub-title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 320px;
+}
+
+.hub-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  white-space: nowrap;
+}
+
+.pulse-ring-sm {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent-cyan);
+  animation: pulse-ring-anim 2s infinite ease-out;
+}
+
+.hub-insight {
+  font-size: 0.88rem;
+  color: #e2e8f0;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.hub-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 4px 10px;
+  min-width: 340px;
+  transition: var(--transition);
+}
+
+.hub-search-bar:focus-within {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+}
+
+.hub-search-bar input {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.85rem;
+  outline: none;
+  width: 100%;
+}
+
+.hub-search-bar input::placeholder {
+  color: var(--text-dim);
+}
+
+.hub-search-btn {
+  background: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.hub-search-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.hub-quick-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+}
+
+.quick-label {
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.quick-topic-pill {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.quick-topic-pill:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: var(--accent-cyan);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Topic Dossier Modal Styles
+   ========================================================================== */
+.dossier-modal-container {
+  max-width: 680px;
+}
+
+.dossier-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dossier-icon {
+  font-size: 1.5rem;
+}
+
+.dossier-status-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.status-SURGING {
+  background: rgba(244, 63, 94, 0.18);
+  color: var(--accent-rose);
+  border: 1px solid rgba(244, 63, 94, 0.4);
+}
+
+.status-ACTIVE {
+  background: rgba(56, 189, 248, 0.18);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.status-QUIET {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.dossier-assessment-box {
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(99, 102, 241, 0.08));
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  font-size: 0.9rem;
+  color: #f1f5f9;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.dossier-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dossier-stat-tile {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dossier-stat-num {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--accent-cyan);
+}
+
+.dossier-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dossier-source-breakdown {
+  margin-bottom: 16px;
+}
+
+.dossier-source-breakdown h4,
+.dossier-communities-section h4,
+.dossier-events-section h4 {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.dossier-breakdown-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.breakdown-chip {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-subtle);
+}
+
+.breakdown-chip.wiki-chip strong { color: var(--accent-cyan); }
+.breakdown-chip.hn-chip strong { color: #f59e0b; }
+.breakdown-chip.gh-chip strong { color: #34d399; }
+.breakdown-chip.reddit-chip strong { color: #f87171; }
+.breakdown-chip.devto-chip strong { color: #a5b4fc; }
+
+.dossier-comm-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.dossier-comm-pill {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  font-family: var(--font-mono);
+}
+
+.dossier-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.dossier-event-row {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dossier-event-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+}
+
+.dossier-event-title {
+  font-size: 0.82rem;
+  color: var(--text-main);
+  font-weight: 500;
 }

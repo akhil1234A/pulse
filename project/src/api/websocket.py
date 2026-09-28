@@ -12,8 +12,10 @@ from src.common.metrics import API_WEBSOCKET_CONNECTIONS
 from src.common.models import EventSource, EventType
 from src.common.redis_utils import (
     active_users_key,
+    cross_source_alerts_key,
     events_per_sec_key,
     events_today_key,
+    hot_topics_key,
     recent_anomalies_key,
     recent_events_key,
     source_count_key,
@@ -121,6 +123,12 @@ async def build_dashboard_payload(redis_client: Any) -> Dict[str, Any]:
     # 4. Recent anomalies (latest 5)
     pipe.lrange(recent_anomalies_key(), 0, 4)
 
+    # 5. Cross-source intelligence alerts (latest 5)
+    pipe.lrange(cross_source_alerts_key(), 0, 4)
+
+    # 6. Top 5 hot topics across platforms
+    pipe.zrevrange(hot_topics_key(), 0, 4, withscores=True)
+
     results = await pipe.execute()
 
     total_today = int(results[0] or 0)
@@ -136,8 +144,15 @@ async def build_dashboard_payload(redis_client: Any) -> Dict[str, Any]:
 
     events_by_source = {}
     for src in sources:
-        events_by_source[src] = int(results[offset] or 0)
-        offset += 1
+        if offset < len(results) and not isinstance(results[offset], (list, dict)):
+            val = results[offset]
+            offset += 1
+            try:
+                events_by_source[src] = int(val or 0)
+            except (ValueError, TypeError):
+                events_by_source[src] = 0
+        else:
+            events_by_source[src] = 0
 
     raw_trending = results[offset] or []
     offset += 1
@@ -165,6 +180,7 @@ async def build_dashboard_payload(redis_client: Any) -> Dict[str, Any]:
             pass
 
     raw_anomalies = results[offset] or []
+    offset += 1
     recent_anomalies = []
     for raw_anom in raw_anomalies:
         try:
@@ -174,6 +190,30 @@ async def build_dashboard_payload(redis_client: Any) -> Dict[str, Any]:
                 recent_anomalies.append(raw_anom)
         except Exception:
             pass
+
+    raw_alerts = results[offset] or []
+    offset += 1
+    cross_source_alerts = []
+    for raw_al in raw_alerts:
+        try:
+            if isinstance(raw_al, str):
+                cross_source_alerts.append(json.loads(raw_al))
+            elif isinstance(raw_al, dict):
+                cross_source_alerts.append(raw_al)
+        except Exception:
+            pass
+
+    raw_hot_topics = results[offset] or []
+    offset += 1
+    hot_topics = []
+    for rank, (topic, score) in enumerate(raw_hot_topics, start=1):
+        hot_topics.append(
+            {
+                "rank": rank,
+                "topic": topic,
+                "score": int(score),
+            }
+        )
 
     return {
         "type": "dashboard_update",
@@ -188,6 +228,8 @@ async def build_dashboard_payload(redis_client: Any) -> Dict[str, Any]:
         "trending": trending,
         "recent_events": recent_events,
         "recent_anomalies": recent_anomalies,
+        "cross_source_alerts": cross_source_alerts,
+        "hot_topics": hot_topics,
     }
 
 

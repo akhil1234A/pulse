@@ -8,6 +8,10 @@ from typing import List
 from src.common.config import get_settings
 from src.common.logging import get_logger, setup_logging
 from src.common.metrics import start_metrics_exporter
+from src.ingestion.connectors.devto import DevtoConnector
+from src.ingestion.connectors.github_events import GitHubEventsConnector
+from src.ingestion.connectors.hackernews import HackerNewsConnector
+from src.ingestion.connectors.reddit import RedditConnector
 from src.ingestion.connectors.simulator import EventSimulator
 from src.ingestion.connectors.wikipedia import WikipediaConnector
 from src.ingestion.pipeline import IngestionPipeline
@@ -41,6 +45,54 @@ async def run_wikipedia(pipeline: IngestionPipeline, wikipedia: WikipediaConnect
         logger.info("Wikipedia connector task cancelled.")
     finally:
         wikipedia.stop()
+
+
+async def run_hackernews(pipeline: IngestionPipeline, hackernews: HackerNewsConnector) -> None:
+    """Consumes events from Hacker News API and feeds them into the IngestionPipeline."""
+    logger.info("Starting Hacker News connector task...")
+    try:
+        async for event in hackernews.stream_events():
+            pipeline.process_event(event)
+    except asyncio.CancelledError:
+        logger.info("Hacker News connector task cancelled.")
+    finally:
+        hackernews.stop()
+
+
+async def run_github(pipeline: IngestionPipeline, github: GitHubEventsConnector) -> None:
+    """Consumes events from GitHub Events API and feeds them into the IngestionPipeline."""
+    logger.info("Starting GitHub Events connector task...")
+    try:
+        async for event in github.stream_events():
+            pipeline.process_event(event)
+    except asyncio.CancelledError:
+        logger.info("GitHub connector task cancelled.")
+    finally:
+        github.stop()
+
+
+async def run_reddit(pipeline: IngestionPipeline, reddit: RedditConnector) -> None:
+    """Consumes events from Reddit JSON API and feeds them into the IngestionPipeline."""
+    logger.info("Starting Reddit connector task...")
+    try:
+        async for event in reddit.stream_events():
+            pipeline.process_event(event)
+    except asyncio.CancelledError:
+        logger.info("Reddit connector task cancelled.")
+    finally:
+        reddit.stop()
+
+
+async def run_devto(pipeline: IngestionPipeline, devto: DevtoConnector) -> None:
+    """Consumes articles from Dev.to API and feeds them into the IngestionPipeline."""
+    logger.info("Starting Dev.to connector task...")
+    try:
+        async for event in devto.stream_events():
+            pipeline.process_event(event)
+    except asyncio.CancelledError:
+        logger.info("Dev.to connector task cancelled.")
+    finally:
+        devto.stop()
 
 
 async def main() -> None:
@@ -85,6 +137,55 @@ async def main() -> None:
             name="wikipedia_worker",
         )
         tasks.append(wiki_task)
+
+    # 3. Hacker News connector
+    if settings.ingestion_hackernews_enabled:
+        hackernews = HackerNewsConnector(
+            poll_interval=float(settings.ingestion_hackernews_poll_interval),
+        )
+        connectors.append(hackernews)
+        hn_task = asyncio.create_task(
+            run_hackernews(pipeline, hackernews),
+            name="hackernews_worker",
+        )
+        tasks.append(hn_task)
+
+    # 4. GitHub Events connector
+    if settings.ingestion_github_enabled:
+        github = GitHubEventsConnector(
+            poll_interval=float(settings.ingestion_github_poll_interval),
+        )
+        connectors.append(github)
+        gh_task = asyncio.create_task(
+            run_github(pipeline, github),
+            name="github_worker",
+        )
+        tasks.append(gh_task)
+
+    # 5. Reddit Tech Feed connector
+    if settings.ingestion_reddit_enabled:
+        reddit = RedditConnector(
+            poll_interval=float(settings.ingestion_reddit_poll_interval),
+        )
+        connectors.append(reddit)
+        reddit_task = asyncio.create_task(
+            run_reddit(pipeline, reddit),
+            name="reddit_worker",
+        )
+        tasks.append(reddit_task)
+
+    # 6. Dev.to Community connector
+    if settings.ingestion_devto_enabled:
+        devto = DevtoConnector(
+            poll_interval=float(settings.ingestion_devto_poll_interval),
+            per_page=settings.ingestion_devto_per_page,
+        )
+        connectors.append(devto)
+        devto_task = asyncio.create_task(
+            run_devto(pipeline, devto),
+            name="devto_worker",
+        )
+        tasks.append(devto_task)
 
     if not tasks:
         logger.warning("No ingestion connectors enabled! Exiting.")
